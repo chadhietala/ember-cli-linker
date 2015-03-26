@@ -1,0 +1,23 @@
+{
+  "name": "ember-cli-pre-packager",
+  "version": "0.0.0",
+  "description": "Provides pre-packaging for Ember CLI applcations",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "ember-cli"
+  ],
+  "author": "Chad Hietala, Stefan Penner, and Ember CLI contributors",
+  "license": "MIT",
+  "dependencies": {
+    "core-object": "^1.1.0",
+    "fs-extra": "^0.16.5",
+    "lodash-node": "^3.6.0",
+    "quick-temp": "^0.1.2",
+    "rsvp": "^3.0.17",
+    "symlink-or-copy": "^1.0.1",
+    "walk-sync": "^0.1.3"
+  }
+}
