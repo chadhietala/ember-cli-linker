@@ -2,7 +2,7 @@
   "name": "ember-cli-pre-packager",
   "version": "0.0.0",
   "description": "Provides pre-packaging for Ember CLI applcations",
-  "main": "index.js",
+  "main": "lib/pre-packager.js",
   "scripts": {
     "test": "mocha"
   },
