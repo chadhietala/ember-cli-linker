@@ -7,9 +7,7 @@
       "ember/load-initializers",
       "example-app/config/environment"
     ],
-    "exports": [
-      "NOT IMPLEMENTED YET"
-    ]
+    "exports": ["NOT IMPLEMENTED YET"]
   },
   "example-app/initializers/ember-moment.js": {
     "imports": [
@@ -19,9 +17,7 @@
       "ember-moment/helpers/duration",
       "ember"
     ],
-    "exports": [
-      "NOT IMPLEMENTED YET"
-    ]
+    "exports": ["NOT IMPLEMENTED YET"]
   },
   "example-app/router.js": {
     "imports": [
@@ -29,8 +25,6 @@
       "ember",
       "example-app/config/environment"
     ],
-    "exports": [
-      "NOT IMPLEMENTED YET"
-    ]
+    "exports": ["NOT IMPLEMENTED YET"]
   }
 }

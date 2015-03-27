@@ -14,6 +14,7 @@
   "dependencies": {
     "core-object": "^1.1.0",
     "fs-extra": "^0.17.0",
+    "immutable": "^3.7.0",
     "lodash-node": "^3.6.0",
     "quick-temp": "^0.1.2",
     "rsvp": "^3.0.18",
