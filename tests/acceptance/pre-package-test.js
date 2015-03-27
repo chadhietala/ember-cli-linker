@@ -6,7 +6,6 @@ var stew            = require('broccoli-stew');
 var path            = require('path');
 var expect          = require('chai').expect;
 var find            = stew.find;
-var log             = stew.log;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
 
@@ -18,12 +17,18 @@ describe('pre-package acceptance', function () {
       return new PrePackager(arguments[0], arguments[1]);
     },
     filter: function(paths) {
-      return paths.filter(function(path) { return !/\/$/.test(path); })
+      return paths.filter(function(path) { return !/\/$/.test(path); });
     }
   });
 
   afterEach(function () {
     return cleanupBuilders();
+  });
+
+  it('should throw if no entries are passed', function () {
+    return prePackager(find('.')).catch(function(err) {
+      expect(err).to.deep.equal(new Error('You must pass an array of entries.'));
+    });
   });
 
   it('should only include files in the dependency graph', function () {
