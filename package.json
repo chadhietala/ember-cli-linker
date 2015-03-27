@@ -4,7 +4,7 @@
   "description": "Provides pre-packaging for Ember CLI applcations",
   "main": "lib/pre-packager.js",
   "scripts": {
-    "test": "mocha"
+    "test": "./node_modules/.bin/mocha -R nyan tests/**/*-test.js"
   },
   "keywords": [
     "ember-cli"
@@ -19,5 +19,11 @@
     "rsvp": "^3.0.17",
     "symlink-or-copy": "^1.0.1",
     "walk-sync": "^0.1.3"
+  },
+  "devDependencies": {
+    "broccoli-stew": "^0.2.1",
+    "broccoli-test-helpers": "0.0.3",
+    "chai": "^2.1.2",
+    "mocha": "^2.2.1"
   }
 }
