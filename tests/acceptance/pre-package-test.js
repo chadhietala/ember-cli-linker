@@ -87,4 +87,34 @@ describe('pre-package acceptance', function () {
 
     });
   });
+
+  it('should have edits to a file', function () {
+    var initializer = path.join(process.cwd(), '/example-app/initializers/ember-moment.js');
+
+
+    return prePackager(find('.'), {
+      entries: ['example-app']
+    }).then(function(results) {
+      expect(results.files).to.deep.equal([
+        'ember-moment/helpers/ago.js',
+        'ember-moment/helpers/duration.js',
+        'ember-moment/helpers/moment.js',
+        'example-app/app.js',
+        'example-app/config/environment.js',
+        'example-app/initializers/ember-moment.js',
+        'example-app/router.js'
+      ]);
+
+      // Simulate edit
+      fs.writeFileSync(initializer, 'var a = "a";');
+
+      return results.builder();
+    }).then(function(results) {
+
+      var changedFile = fs.readFileSync(path.join(results.directory, 'example-app/initializers/ember-moment.js'), 'utf8');
+
+      expect(changedFile).to.equal('var a = "a";');
+      fs.writeFileSync(initializer, '');
+    });
+  });
 });
