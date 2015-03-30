@@ -4,7 +4,7 @@
   "description": "Provides pre-packaging for Ember CLI applcations",
   "main": "lib/pre-packager.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha -R nyan tests/**/*-test.js"
+    "test": "./node_modules/.bin/mocha -R spec tests/**/*-test.js"
   },
   "keywords": [
     "ember-cli"

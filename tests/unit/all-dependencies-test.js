@@ -46,9 +46,9 @@ describe('all dependencies unit', function() {
       ));
     });
 
-    it('should return null if the package graph is not foudn', function() {
+    it('should return an empty Map if the package graph is not foudn', function() {
       var imports = AllDependencies.for('example-moment/ago.js');
-      expect(imports).to.equal(null);
+      expect(imports).to.deep.equal(Immutable.Map());
     });
   });
 });

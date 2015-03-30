@@ -49,7 +49,7 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('rebuilds when an addon changes imports', function () {
+  it('should remove files from the output if the imports are removed', function () {
     var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/dep-graph.json');
     var appDepGraph = Immutable.fromJS(fs.readJSONSync(graphPath));
     var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/initializers/ember-moment.js');
