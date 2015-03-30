@@ -3,8 +3,8 @@
     "imports": [
       "exports",
       "ember",
-      "ember/resolver",
-      "ember/load-initializers",
+      "ember-resolver",
+      "ember-load-initializers",
       "example-app/config/environment"
     ],
     "exports": [

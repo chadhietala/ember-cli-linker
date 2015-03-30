@@ -1,0 +1,6 @@
+{
+  "ember-load-initializers.js": {
+    "imports": [],
+    "exports": ["NOT IMPLEMENTED YET"]
+  }
+}

@@ -37,13 +37,12 @@ describe('all dependencies unit', function() {
     it('should return the imports for a specific file', function() {
       AllDependencies.update('example-app', depGraph);
       var imports = AllDependencies.for('example-app/initializers/ember-moment.js');
-      expect(imports).to.deep.equal(Immutable.List.of(
-        'exports',
+      expect(imports.toJS()).to.deep.equal([
         'ember-moment/helpers/moment',
         'ember-moment/helpers/ago',
         'ember-moment/helpers/duration',
         'ember'
-      ));
+      ]);
     });
 
     it('should return an empty Map if the package graph is not foudn', function() {

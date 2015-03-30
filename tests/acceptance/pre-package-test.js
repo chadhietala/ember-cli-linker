@@ -38,9 +38,12 @@ describe('pre-package acceptance', function () {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
+        'ember/ember.js',
+        'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
         'ember-moment/helpers/duration.js',
         'ember-moment/helpers/moment.js',
+        'ember-resolver/ember-resolver.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/initializers/ember-moment.js',
@@ -58,9 +61,12 @@ describe('pre-package acceptance', function () {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
+        'ember/ember.js',
+        'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
         'ember-moment/helpers/duration.js',
         'ember-moment/helpers/moment.js',
+        'ember-resolver/ember-resolver.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/initializers/ember-moment.js',
@@ -80,6 +86,9 @@ describe('pre-package acceptance', function () {
       fs.writeFileSync(initializer, '');
       
       expect(results.files).to.deep.equal([
+        'ember/ember.js',
+        'ember-load-initializers/ember-load-initializers.js',
+        'ember-resolver/ember-resolver.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/router.js'
