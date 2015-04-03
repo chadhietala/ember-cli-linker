@@ -33,11 +33,12 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('should only include files in the dependency graph', function () {
+  it.only('should only include files in the dependency graph', function () {
     return prePackager(find('.'), {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
+        'browserified/moment/moment.js',
         'ember/ember.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
@@ -70,7 +71,8 @@ describe('pre-package acceptance', function () {
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/initializers/ember-moment.js',
-        'example-app/router.js'
+        'example-app/router.js',
+        'browserified/moment/moment.js'
       ]);
 
       // Simulated the removal of ember-moment
