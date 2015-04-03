@@ -1,3 +1,4 @@
 node_modules
 tmp/*
 tests/acceptance/fixtures/tmp/*
+!tests/fixtures/node_modules
