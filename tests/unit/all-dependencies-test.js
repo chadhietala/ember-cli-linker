@@ -4,7 +4,7 @@ var AllDependencies = require('../../lib/all-dependencies');
 var expect = require('chai').expect;
 var fs = require('fs-extra');
 var depGraph = fs.readJSONSync('./tests/fixtures/example-app/dep-graph.json');
-var Immutable = require('immutable');
+var mori = require('mori');
 
 describe('all dependencies unit', function() {
 
@@ -31,13 +31,13 @@ describe('all dependencies unit', function() {
   describe('for', function() {
     it('should return a graph for a package', function() {
       AllDependencies.update('example-app', depGraph);
-      expect(AllDependencies.for('example-app')).to.deep.equal(Immutable.fromJS(depGraph));
+      expect(AllDependencies.for('example-app')).to.deep.equal(mori.toClj(depGraph));
     });
 
     it('should return the imports for a specific file', function() {
       AllDependencies.update('example-app', depGraph);
       var imports = AllDependencies.for('example-app/initializers/ember-moment.js');
-      expect(imports.toJS()).to.deep.equal([
+      expect(mori.toJs(imports)).to.deep.equal([
         'ember-moment/helpers/moment',
         'ember-moment/helpers/ago',
         'ember-moment/helpers/duration',
@@ -47,7 +47,7 @@ describe('all dependencies unit', function() {
 
     it('should return an empty Map if the package graph is not foudn', function() {
       var imports = AllDependencies.for('example-moment/ago.js');
-      expect(imports).to.deep.equal(Immutable.Map());
+      expect(imports).to.deep.equal(mori.hashMap());
     });
   });
 });
