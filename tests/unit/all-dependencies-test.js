@@ -3,8 +3,8 @@
 var AllDependencies = require('../../lib/all-dependencies');
 var expect = require('chai').expect;
 var fs = require('fs-extra');
-var depGraph = fs.readJSONSync('./tests/fixtures/example-app/dep-graph.json');
 var mori = require('mori');
+var depGraph = mori.toClj(fs.readJSONSync('./tests/fixtures/example-app/dep-graph.json'));
 
 describe('all dependencies unit', function() {
 
@@ -15,8 +15,7 @@ describe('all dependencies unit', function() {
   describe('update', function () {
     it('should place a package into dep-graph keyed off of the package name', function() {
       AllDependencies.update('example-app', depGraph);
-      expect(AllDependencies._graph['example-app']).to.deep.equal(depGraph);
-      expect(AllDependencies._graph['example-app']).to.deep.equal(depGraph);
+      expect(mori.get(AllDependencies._graph, 'example-app')).to.deep.equal(depGraph);
     });
 
     it('should throw if no package is given', function() {
@@ -45,9 +44,12 @@ describe('all dependencies unit', function() {
       ]);
     });
 
-    it('should return an empty Map if the package graph is not foudn', function() {
-      var imports = AllDependencies.for('example-moment/ago.js');
-      expect(imports).to.deep.equal(mori.hashMap());
+    it('should return an empty Map if the package graph is not found', function() {
+      expect(AllDependencies.for('example-moment')).to.deep.equal(mori.hashMap());
+    });
+
+    it('should return an empty List if the file imports are not found', function() {
+      expect(AllDependencies.for('example-moment/ago.js')).to.deep.equal(mori.list());
     });
   });
 });
