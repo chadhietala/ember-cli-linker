@@ -151,8 +151,4 @@ describe('pre-package acceptance', function () {
       });
     });
   });
-
-
-
-  
 });
