@@ -27,8 +27,9 @@
   },
   "devDependencies": {
     "broccoli-stew": "^0.2.1",
-    "broccoli-test-helpers": "0.0.5",
+    "broccoli-test-helpers": "0.0.6",
     "chai": "^2.2.0",
-    "mocha": "^2.2.1"
+    "mocha": "^2.2.1",
+    "sinon": "^1.14.1"
   }
 }

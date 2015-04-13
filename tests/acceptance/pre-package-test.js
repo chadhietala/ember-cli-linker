@@ -6,6 +6,7 @@ var stew            = require('broccoli-stew');
 var path            = require('path');
 var expect          = require('chai').expect;
 var fs              = require('fs-extra');
+var sinon           = require('sinon');
 var find            = stew.find;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
@@ -16,11 +17,12 @@ function clone(a) {
 
 describe('pre-package acceptance', function () {
   var fixturePath = path.resolve('./tests/fixtures');
+  var testSubject = function() {
+      return new PrePackager(arguments[0], arguments[1]);
+  };
   var prePackager = makeTestHelper({
     fixturePath: fixturePath,
-    subject: function() {
-      return new PrePackager(arguments[0], arguments[1]);
-    },
+    subject: testSubject,
     filter: function(paths) {
       return paths.filter(function(path) { return !/\/$/.test(path); });
     }
@@ -103,4 +105,54 @@ describe('pre-package acceptance', function () {
 
     });
   });
+  
+  // TODO
+  // Spying on functions with broccoli-test-helpers is no bueno
+  describe('node_modules rebuild', function() {
+    beforeEach(function() {
+      prePackager = makeTestHelper({
+        fixturePath: fixturePath,
+        subject: testSubject,
+        prepSubject: function(subject) {
+          subject.resolvers.npm.files = {};
+          subject.resolvers.npm.stubCache = {};
+          subject.resolvers.npm.graph = {};
+          sinon.spy(subject.resolvers.npm, 'updateCache');
+          return subject;
+        }
+      });
+    });
+
+    afterEach(function () {
+      return cleanupBuilders();
+    });
+
+    it('should not re-browserfify if nothing has changed', function() {
+      return prePackager(find('.'), {
+        entries: ['example-app']
+      }).then(function(results) {
+        return results.builder();
+      }).then(function(results) {
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(1);
+        results.subject.resolvers.npm.updateCache.restore();
+      });
+    });
+
+    it('should re-browserfify if something has changed', function() {
+      return prePackager(find('.'), {
+        entries: ['example-app']
+      }).then(function(results) {
+        fs.writeFileSync('./node_modules/moment/lib/month.js', 'var a = "a";');
+        return results.builder();
+      }).then(function(results) {
+        fs.remove('./node_modules/moment/lib/month.js');
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
+        results.subject.resolvers.npm.updateCache.restore();
+      });
+    });
+  });
+
+
+
+  
 });
