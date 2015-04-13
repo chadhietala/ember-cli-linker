@@ -14,7 +14,6 @@ describe('all dependencies unit', function() {
   describe('update', function () {
     it('should place a package into dep-graph keyed off of the package name', function() {
       AllDependencies.update('example-app', depGraph);
-      expect(AllDependencies._graph['example-app']).to.be.an('object');
       expect(AllDependencies._graph['example-app']).to.deep.equal(depGraph);
     });
 
@@ -37,7 +36,6 @@ describe('all dependencies unit', function() {
       AllDependencies.update('example-app', depGraph);
       var imports = AllDependencies.for('example-app/initializers/ember-moment.js');
       expect(imports).to.deep.equal([
-        'exports',
         'ember-moment/helpers/moment',
         'ember-moment/helpers/ago',
         'ember-moment/helpers/duration',
@@ -45,9 +43,12 @@ describe('all dependencies unit', function() {
       ]);
     });
 
-    it('should return null if the package graph is not foudn', function() {
-      var imports = AllDependencies.for('example-moment/ago.js');
-      expect(imports).to.equal(null);
+    it('should return an empty Map if the package graph is not found', function() {
+      expect(AllDependencies.for('example-moment')).to.deep.equal({});
+    });
+
+    it('should return an empty List if the file imports are not found', function() {
+      expect(AllDependencies.for('example-moment/ago.js')).to.deep.equal([]);
     });
   });
 });

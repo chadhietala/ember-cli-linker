@@ -12,7 +12,7 @@
     "imports": [
       "exports",
       "ember",
-      "moment",
+      "npm:moment",
       "ember-moment/computeds/moment"
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
@@ -21,7 +21,7 @@
     "imports": [
       "exports",
       "ember",
-      "moment",
+      "npm:moment",
       "ember-moment/computeds/moment"
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
@@ -30,7 +30,7 @@
     "imports": [
       "exports",
       "ember",
-      "moment"
+      "npm:moment"
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
   },
@@ -38,7 +38,7 @@
     "imports": [
       "exports",
       "ember",
-      "moment"
+      "npm:moment"
     ],
     "exports": [
       "NOT IMPLEMENTED YET"
@@ -48,17 +48,17 @@
     "imports": [
       "exports",
       "ember",
-      "moment"
+      "npm:moment"
     ],
     "exports": [
       "NOT IMPLEMENTED YET"
     ]
   },
-    "ember-moment/helpers/moment.js": {
+  "ember-moment/helpers/moment.js": {
     "imports": [
       "exports",
       "ember",
-      "moment"
+      "npm:moment"
     ],
     "exports": [
       "NOT IMPLEMENTED YET"
