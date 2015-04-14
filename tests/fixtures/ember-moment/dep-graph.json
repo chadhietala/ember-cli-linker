@@ -38,7 +38,7 @@
     "imports": [
       "exports",
       "ember",
-      "npm:moment"
+      "npm:moment/lib/ago"
     ],
     "exports": [
       "NOT IMPLEMENTED YET"

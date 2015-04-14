@@ -43,7 +43,8 @@ describe('pre-package acceptance', function () {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
-        'browserified/moment/moment.js',
+        'browserified/moment/index.js',
+        'browserified/moment/lib/ago.js',
         'ember/ember.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
@@ -69,7 +70,8 @@ describe('pre-package acceptance', function () {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
-        'browserified/moment/moment.js',
+        'browserified/moment/index.js',
+        'browserified/moment/lib/ago.js',
         'ember/ember.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
@@ -133,7 +135,7 @@ describe('pre-package acceptance', function () {
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(1);
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
@@ -146,7 +148,7 @@ describe('pre-package acceptance', function () {
         return results.builder();
       }).then(function(results) {
         fs.remove('./node_modules/moment/lib/month.js');
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(4);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
