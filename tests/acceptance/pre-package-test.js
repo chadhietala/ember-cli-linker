@@ -43,8 +43,7 @@ describe('pre-package acceptance', function () {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
-        'browserified/moment/index.js',
-        'browserified/moment/lib/ago.js',
+        'browserified/moment/moment.js',
         'ember/ember.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
@@ -69,20 +68,6 @@ describe('pre-package acceptance', function () {
     return prePackager(find('.'), {
       entries: ['example-app']
     }).then(function(results) {
-      expect(results.files).to.deep.equal([
-        'browserified/moment/index.js',
-        'browserified/moment/lib/ago.js',
-        'ember/ember.js',
-        'ember-load-initializers/ember-load-initializers.js',
-        'ember-moment/helpers/ago.js',
-        'ember-moment/helpers/duration.js',
-        'ember-moment/helpers/moment.js',
-        'ember-resolver/ember-resolver.js',
-        'example-app/app.js',
-        'example-app/config/environment.js',
-        'example-app/initializers/ember-moment.js',
-        'example-app/router.js'
-      ]);
 
       delete graphClone['example-app/initializers/ember-moment.js'];
 
@@ -116,9 +101,7 @@ describe('pre-package acceptance', function () {
         fixturePath: fixturePath,
         subject: testSubject,
         prepSubject: function(subject) {
-          subject.resolvers.npm.files = {};
-          subject.resolvers.npm.stubCache = {};
-          subject.resolvers.npm.graph = {};
+          subject.resolvers.npm.cache = {};
           sinon.spy(subject.resolvers.npm, 'updateCache');
           return subject;
         }
@@ -129,18 +112,20 @@ describe('pre-package acceptance', function () {
       return cleanupBuilders();
     });
 
-    it('should not re-browserfify if nothing has changed', function() {
+    it('should not re-browserfify if the package has not changed', function() {
       return prePackager(find('.'), {
         entries: ['example-app']
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
+        return results.builder();
+      }).then(function(results) {
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(1);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
 
-    it('should re-browserfify if something has changed', function() {
+    it('should re-browserfify if the package changed', function() {
       return prePackager(find('.'), {
         entries: ['example-app']
       }).then(function(results) {
@@ -148,7 +133,7 @@ describe('pre-package acceptance', function () {
         return results.builder();
       }).then(function(results) {
         fs.remove('./node_modules/moment/lib/month.js');
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(4);
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
