@@ -92,6 +92,10 @@ describe('pre-package acceptance', function () {
 
     });
   });
+
+  it('should depupe out dependency of dependency', function() {
+
+  });
   
   // TODO
   // Spying on functions with broccoli-test-helpers is no bueno
