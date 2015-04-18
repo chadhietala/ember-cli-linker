@@ -38,7 +38,7 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('should only include files in the dependency graph', function () {
+  it.only('should only include files in the dependency graph', function () {
     return prePackager(find('.'), {
       entries: ['example-app']
     }).then(function(results) {

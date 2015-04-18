@@ -5,6 +5,7 @@
   "main": "lib/pre-packager.js",
   "scripts": {
     "test:debug": "mocha debug -R spec tests/**/*-test.js",
+    "test:watch": "mocha -R spec -w tests/**/*-test.js",
     "test": "mocha -R spec tests/**/*-test.js"
   },
   "keywords": [
