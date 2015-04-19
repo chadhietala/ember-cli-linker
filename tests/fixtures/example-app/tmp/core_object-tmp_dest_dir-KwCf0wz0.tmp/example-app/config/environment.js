@@ -1,1 +1,0 @@
-/Users/chietala/workspace/ember-cli-pre-packager/tests/fixtures/example-app/tree/example-app/config/environment.js
