@@ -46,7 +46,7 @@ describe('pre-package acceptance', function () {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
-        'browserified/moment/moment.js',
+        'browserified/ember-moment/ember-moment-legacy.js',
         'ember/ember.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
@@ -58,6 +58,8 @@ describe('pre-package acceptance', function () {
         'example-app/initializers/ember-moment.js',
         'example-app/router.js'
       ]);
+
+      console.log(fs.readFileSync(path.join(results.directory, 'browserified/ember-moment/ember-moment-legacy.js'), 'utf8'))
     });
   });
 

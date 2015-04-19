@@ -1,0 +1,1 @@
+/Users/chietala/workspace/ember-cli-pre-packager/tests/fixtures/example-app/tree/ember-moment/helpers/duration.js
