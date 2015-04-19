@@ -5,6 +5,7 @@
   "main": "lib/pre-packager.js",
   "scripts": {
     "test:debug": "mocha debug -R spec tests/**/*-test.js",
+    "test:watch": "mocha -R spec -w tests/**/*-test.js",
     "test": "mocha -R spec tests/**/*-test.js"
   },
   "keywords": [
@@ -17,6 +18,7 @@
     "browserify": "^9.0.3",
     "core-object": "^1.1.0",
     "fs-extra": "^0.17.0",
+    "hash-for-dep": "0.0.3",
     "lodash-node": "^3.6.0",
     "mori": "^0.3.2",
     "promise-map-series": "^0.2.1",
