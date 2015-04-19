@@ -39,7 +39,7 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it.only('should only include files in the dependency graph', function () {
+  it('should only include files in the dependency graph', function () {
     return prePackager(rename(find('tree'), function(relativePath) {
       return relativePath.replace('tree/', '');
     }), {
@@ -58,19 +58,19 @@ describe('pre-package acceptance', function () {
         'example-app/initializers/ember-moment.js',
         'example-app/router.js'
       ]);
-
-      console.log(fs.readFileSync(path.join(results.directory, 'browserified/ember-moment/ember-moment-legacy.js'), 'utf8'))
     });
   });
 
   it('should remove files from the output if the imports are removed', function () {
-    var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/dep-graph.json');
+    var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/tree/example-app/dep-graph.json');
     var graph = fs.readJSONSync(graphPath);
     var graphClone = clone(graph);
 
-    var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/initializers/ember-moment.js');
+    var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/tree/example-app/initializers/ember-moment.js');
 
-    return prePackager(find('.'), {
+    return prePackager(rename(find('tree'), function(relativePath) {
+      return relativePath.replace('tree/', '');
+    }), {
       entries: ['example-app']
     }).then(function(results) {
 
@@ -122,7 +122,9 @@ describe('pre-package acceptance', function () {
     });
 
     it('should not re-browserfify if the package has not changed', function() {
-      return prePackager(find('.'), {
+      return prePackager(rename(find('tree'), function(relativePath) {
+        return relativePath.replace('tree/', '');
+      }), {
         entries: ['example-app']
       }).then(function(results) {
         return results.builder();
@@ -135,13 +137,16 @@ describe('pre-package acceptance', function () {
     });
 
     it('should re-browserfify if the package changed', function() {
-      return prePackager(find('.'), {
+      var moment = './node_modules/ember-moment/node_modules/moment/lib/month.js';
+      return prePackager(rename(find('tree'), function(relativePath) {
+        return relativePath.replace('tree/', '');
+      }), {
         entries: ['example-app']
       }).then(function(results) {
-        fs.writeFileSync('./node_modules/moment/lib/month.js', 'var a = "a";');
+        fs.writeFileSync(moment, 'var a = "a";');
         return results.builder();
       }).then(function(results) {
-        fs.remove('./node_modules/moment/lib/month.js');
+        fs.remove(moment);
         expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
         results.subject.resolvers.npm.updateCache.restore();
       });

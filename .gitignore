@@ -1,3 +1,4 @@
 node_modules
 tmp
 !tests/fixtures/example-app/node_modules
+!tests/fixtures/example-app/node_modules/ember-moment/node_modules

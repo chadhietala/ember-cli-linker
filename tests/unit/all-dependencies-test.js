@@ -3,11 +3,12 @@
 var AllDependencies = require('../../lib/all-dependencies');
 var expect = require('chai').expect;
 var fs = require('fs-extra');
-var depGraph = fs.readJSONSync('./tests/fixtures/example-app/tree/example-app/dep-graph.json');
 
 describe('all dependencies unit', function() {
+  var depGraph;
 
   beforeEach(function () {
+    depGraph = fs.readJSONSync('./tree/example-app/dep-graph.json');
     AllDependencies._graph = {};
   });
 
@@ -70,13 +71,15 @@ describe('all dependencies unit', function() {
       AllDependencies.update('example-app', depGraph);
       var imports = AllDependencies.for('example-app/initializers/ember-moment');
       expect(imports).to.deep.equal({
-        file: 'example-app/initializers/ember-moment',
-        fileImports: [
+        pkg: 'example-app',
+        entry: 'example-app',
+        imports: [
           'ember-moment/helpers/moment',
           'ember-moment/helpers/ago',
           'ember-moment/helpers/duration',
           'ember'
-        ]
+        ],
+        pkgPath: process.cwd()
       });
     });
 
@@ -85,7 +88,7 @@ describe('all dependencies unit', function() {
     });
 
     it('should return an empty List if the file imports are not found', function() {
-      expect(AllDependencies.for('example-moment/ago.js')).to.deep.equal([]);
+      expect(AllDependencies.for('example-moment/ago.js')).to.deep.equal({});
     });
   });
 });
