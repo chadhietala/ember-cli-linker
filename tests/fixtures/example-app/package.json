@@ -1,0 +1,10 @@
+{
+  "name": "example-app",
+  "main": "./app.js",
+  "dependencies": {
+    "ember-moment": "1.0.0",
+    "ember": "2.0.0",
+    "ember-load-initializers": "0.1.0",
+    "ember-resolver": "2.0.0"
+  }
+}

@@ -3,7 +3,7 @@
 var AllDependencies = require('../../lib/all-dependencies');
 var expect = require('chai').expect;
 var fs = require('fs-extra');
-var depGraph = fs.readJSONSync('./tests/fixtures/example-app/dep-graph.json');
+var depGraph = fs.readJSONSync('./tests/fixtures/example-app/tree/example-app/dep-graph.json');
 
 describe('all dependencies unit', function() {
 

@@ -8,6 +8,7 @@ var expect          = require('chai').expect;
 var fs              = require('fs-extra');
 var sinon           = require('sinon');
 var find            = stew.find;
+var rename          = stew.rename;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
 
@@ -16,7 +17,7 @@ function clone(a) {
 }
 
 describe('pre-package acceptance', function () {
-  var fixturePath = path.resolve('./tests/fixtures');
+  var fixturePath = path.resolve('./tests/fixtures/example-app');
   var testSubject = function() {
       return new PrePackager(arguments[0], arguments[1]);
   };
@@ -39,7 +40,9 @@ describe('pre-package acceptance', function () {
   });
 
   it.only('should only include files in the dependency graph', function () {
-    return prePackager(find('.'), {
+    return prePackager(rename(find('tree'), function(relativePath) {
+      return relativePath.replace('tree/', '');
+    }), {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files).to.deep.equal([
