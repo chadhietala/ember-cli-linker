@@ -6,6 +6,17 @@ var fs = require('fs-extra');
 
 describe('all dependencies unit', function() {
   var depGraph;
+  var cwd = process.cwd();
+
+  before(function() {
+    // Note: Normally this is used at the root of
+    // the application that is being built.
+    process.chdir('./tests/fixtures/example-app');
+  });
+
+  after(function() {
+    process.chdir(cwd);
+  });
 
   beforeEach(function () {
     depGraph = fs.readJSONSync('./tree/example-app/dep-graph.json');

@@ -81,7 +81,6 @@ describe('pre-package acceptance', function () {
 
       return results.builder();
     }).then(function(results) {
-
       // TODO find a better way of restoring this
       fs.outputJSONSync(graphPath, graph);
       fs.writeFileSync(initializer, '');
@@ -137,7 +136,7 @@ describe('pre-package acceptance', function () {
     });
 
     it('should re-browserfify if the package changed', function() {
-      var moment = './node_modules/ember-moment/node_modules/moment/lib/month.js';
+      var moment = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/lib/month.js';
       return prePackager(rename(find('tree'), function(relativePath) {
         return relativePath.replace('tree/', '');
       }), {
