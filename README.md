@@ -1,6 +1,6 @@
 # Ember CLI Pre-Packager
 
-The __Pre-Packager__ is the resolution phase of the future Ember CLI build process. It's primary concern is resolving dependencies in a project.
+The __Pre-Packager__ is the resolution phase of the future Ember CLI build process. It's primary concern is resolving dependencies in a project and outputing a tree the represents graph of files in the project. This would then be passed to the __Packager__ that allows for declarative concatenation.
 
 
 ## High Level Design
