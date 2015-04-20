@@ -1,7 +1,6 @@
 # Ember CLI Pre-Packager
 
-The __Pre-Packager__ is the resolution phase of the future Ember CLI build process. It's primary concern is resolving dependencies in a project and outputing a tree the represents graph of files in the project. This would then be passed to the __Packager__ that allows for declarative concatenation.
-
+The __Pre-Packager__ is the soon to be resolution phase for the Ember CLI build process. It's primary concern is resolving dependencies in a project and outputing a tree that represents the dependency graph.  This tree would then be passed to the __Packager__ that allows for declarative concatenation strategies. The resolution occurs via __dependency resolvers__. Out of the box the pre-packger has 3 depedency resolvers, __addon__, __npm__, and __esnext__, however the resolvers are dynamically looked up which creates a nice charateristic of modularity for resolving different types.
 
 ## High Level Design
 
@@ -39,7 +38,7 @@ input-tree/
     └── router.js
 ```
 
-The build step prior to the pre-packager simply discovers the app and addons in your project transpiles them to amd. As a result of this it should leave a `dep-graph.json` in the output tree.
+The build step prior to the pre-packager simply discovers the app and addons in your project transpiles them to amd. As a result of this it should leave a `dep-graph.json` per package in the output tree.
 
 Instead of re-parsing all of the files in the tree to construct a dependency graph we take advantage of the fact that esperanto can give us a map of all of a packages depenendencies.  This map looks something like the following:
 
@@ -79,16 +78,16 @@ This gives us enough information to enter into a resolution phase.
 
 The algorithm for resolving and syncing files into the output tree is as follows:
 
-1. Sync forward the "entries" files.
+1. Sync forward all of the entry's files.
 2. Map over the imports syncing the file to the output tree
-3. Read in the import's corresponding dep-graph.json for the file in interation grabbing it's imports.
-4. Back to 2 with the imports and continue till all of the entries imports have been synced
+3. Read in the import's corresponding dep-graph.json for the import in the interation grabbing it's imports (transitives).
+4. Back to 2 with the imports (transitives) and continue till all of the entries imports have been synced.
 
 ### Resolution of legacy npm modules
 
 In the event the application is using "legacy" JavaScript modules a la CJS, they should be prefixed with `npm:` when they are used in the addon or applcation.
 
-The way legacy modules are resolved is different. Since we cannot construct a dep-graph.json ahead of time, we rely on browserify's ability to randle this for us. Since there is probablity that addons or apps may pull in the same legacy module we wait till the resolution of addons is complete. This allows for the stub amd files to be aggregated and deduped.
+The way legacy modules are resolved is different. Since we cannot construct a dep-graph.json ahead of time, we rely on browserify's ability to handle this for us. Since there is probablity that addons or apps may pull in the same legacy module we wait till the resolution of addons is complete. This allows for the stub amd files to be aggregated and deduped.
 
 The cache key here is layered from least expensive to most expensive:
 
@@ -96,4 +95,4 @@ The cache key here is layered from least expensive to most expensive:
 - If we've seen the module but the stubs are different we build
 - Finally, if the hashed contents of the module are different we build
 
-This strategy allows for imports from the same module to be added/removed and the built module to retain the parity of the graph.
+This strategy allows for imports from the same module to be added/removed/swapped and the built module to retain the parity of the graph.
