@@ -90,6 +90,7 @@ describe('all dependencies unit', function() {
           'ember-moment/helpers/duration',
           'ember'
         ],
+        parent: undefined,
         pkgPath: process.cwd()
       });
     });
