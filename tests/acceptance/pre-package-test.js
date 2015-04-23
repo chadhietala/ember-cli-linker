@@ -39,20 +39,21 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('should only include files in the dependency graph', function () {
+  it.only('should only include files in the dependency graph', function () {
     return prePackager(rename(find('tree'), function(relativePath) {
       return relativePath.replace('tree/', '');
     }), {
       entries: ['example-app']
     }).then(function(results) {
-      expect(results.files).to.deep.equal([
+      expect(results.files.sort()).to.deep.equal([
         'browserified/ember-moment/ember-moment-legacy.js',
-        'ember/ember.js',
+        'browserified/ember/ember-legacy.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
         'ember-moment/helpers/duration.js',
         'ember-moment/helpers/moment.js',
         'ember-resolver/ember-resolver.js',
+        'ember/ember.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/initializers/ember-moment.js',
