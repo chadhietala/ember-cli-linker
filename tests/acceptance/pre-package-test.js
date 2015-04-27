@@ -39,7 +39,7 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it.only('should only include files in the dependency graph', function () {
+  it('should only include files in the dependency graph', function () {
     return prePackager(rename(find('tree'), function(relativePath) {
       return relativePath.replace('tree/', '');
     }), {
@@ -131,7 +131,8 @@ describe('pre-package acceptance', function () {
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(1);
+        // Should run for ember and ember-moment
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
@@ -147,7 +148,7 @@ describe('pre-package acceptance', function () {
         return results.builder();
       }).then(function(results) {
         fs.remove(moment);
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(3);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
