@@ -1,6 +1,6 @@
 {
   "ember.js": {
-    "imports": [],
+    "imports": ["exports", "npm:jquery"],
     "exports": ["NOT IMPLEMENTED YET"]
   }
 }

@@ -45,14 +45,15 @@ describe('pre-package acceptance', function () {
     }), {
       entries: ['example-app']
     }).then(function(results) {
-      expect(results.files).to.deep.equal([
+      expect(results.files.sort()).to.deep.equal([
         'browserified/ember-moment/ember-moment-legacy.js',
-        'ember/ember.js',
+        'browserified/ember/ember-legacy.js',
         'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
         'ember-moment/helpers/duration.js',
         'ember-moment/helpers/moment.js',
         'ember-resolver/ember-resolver.js',
+        'ember/ember.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/initializers/ember-moment.js',
@@ -130,7 +131,8 @@ describe('pre-package acceptance', function () {
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(1);
+        // Should run for ember and ember-moment
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
@@ -146,7 +148,7 @@ describe('pre-package acceptance', function () {
         return results.builder();
       }).then(function(results) {
         fs.remove(moment);
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
+        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(3);
         results.subject.resolvers.npm.updateCache.restore();
       });
     });
