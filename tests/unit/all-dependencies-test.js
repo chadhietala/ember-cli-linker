@@ -82,7 +82,7 @@ describe('all dependencies unit', function() {
       AllDependencies.update('example-app', depGraph);
       var imports = AllDependencies.for('example-app/initializers/ember-moment');
       expect(imports).to.deep.equal({
-        pkg: 'example-app',
+        pkgName: 'example-app',
         entry: 'example-app',
         imports: [
           'ember-moment/helpers/moment',
