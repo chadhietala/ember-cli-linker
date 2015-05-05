@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "broccoli-stew": "^0.2.1",
-    "broccoli-test-helpers": "0.0.7",
+    "broccoli-test-helpers": "0.0.8",
     "chai": "^2.2.0",
     "debug": "^2.1.3",
     "mocha": "^2.2.1",

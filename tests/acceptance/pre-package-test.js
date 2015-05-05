@@ -7,6 +7,7 @@ var path            = require('path');
 var expect          = require('chai').expect;
 var fs              = require('fs-extra');
 var sinon           = require('sinon');
+var walkSync        = require('walk-sync');
 var find            = stew.find;
 var rename          = stew.rename;
 var makeTestHelper  = helpers.makeTestHelper;
@@ -14,6 +15,18 @@ var cleanupBuilders = helpers.cleanupBuilders;
 
 function clone(a) {
    return JSON.parse(JSON.stringify(a));
+}
+
+function generateTrees() {
+  return walkSync('tests/fixtures/example-app/tree').filter(function(relativePath) {
+    return relativePath.slice(-1) === '/' && (relativePath.split('/').filter(function(item) {
+      return item !== '';
+    })).length === 1;
+  }).map(function(dir) {
+    return rename(find('tree/' + dir), function(relativePath) {
+      return relativePath.replace('tree/', '');
+    });
+  });
 }
 
 describe('pre-package acceptance', function () {
@@ -34,15 +47,13 @@ describe('pre-package acceptance', function () {
   });
 
   it('should throw if no entries are passed', function () {
-    return prePackager(find('.')).catch(function(err) {
+    return prePackager(find('tree')).catch(function(err) {
       expect(err).to.deep.equal(new Error('You must pass an array of entries.'));
     });
   });
 
   it('should only include files in the dependency graph', function () {
-    return prePackager(rename(find('tree'), function(relativePath) {
-      return relativePath.replace('tree/', '');
-    }), {
+    return prePackager(generateTrees(), {
       entries: ['example-app']
     }).then(function(results) {
       expect(results.files.sort()).to.deep.equal([
@@ -56,6 +67,8 @@ describe('pre-package acceptance', function () {
         'ember/ember.js',
         'example-app/app.js',
         'example-app/config/environment.js',
+        'example-app/dep-graph.json',
+        'example-app/index.html',
         'example-app/initializers/ember-moment.js',
         'example-app/router.js'
       ]);
@@ -69,9 +82,7 @@ describe('pre-package acceptance', function () {
 
     var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/tree/example-app/initializers/ember-moment.js');
 
-    return prePackager(rename(find('tree'), function(relativePath) {
-      return relativePath.replace('tree/', '');
-    }), {
+    return prePackager(generateTrees(), {
       entries: ['example-app']
     }).then(function(results) {
 
@@ -92,6 +103,8 @@ describe('pre-package acceptance', function () {
         'ember-resolver/ember-resolver.js',
         'example-app/app.js',
         'example-app/config/environment.js',
+        'example-app/dep-graph.json',
+        'example-app/index.html',
         'example-app/router.js'
       ]);
 
@@ -122,9 +135,7 @@ describe('pre-package acceptance', function () {
     });
 
     it('should not re-browserfify if the package has not changed', function() {
-      return prePackager(rename(find('tree'), function(relativePath) {
-        return relativePath.replace('tree/', '');
-      }), {
+      return prePackager(generateTrees(), {
         entries: ['example-app']
       }).then(function(results) {
         return results.builder();
@@ -139,9 +150,7 @@ describe('pre-package acceptance', function () {
 
     it('should re-browserfify if the package changed', function() {
       var moment = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/lib/month.js';
-      return prePackager(rename(find('tree'), function(relativePath) {
-        return relativePath.replace('tree/', '');
-      }), {
+      return prePackager(generateTrees(), {
         entries: ['example-app']
       }).then(function(results) {
         fs.writeFileSync(moment, 'var a = "a";');
