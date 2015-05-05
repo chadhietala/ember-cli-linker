@@ -4,7 +4,7 @@ The __Pre-Packager__ is the soon to be resolution phase for the Ember CLI build 
 
 ## High Level Design
 
-The input to the pre-packager is a broccoli tree that looks like the following:
+The input to the pre-packager is an array of trees that looks like the following:
 
 ```
 input-tree/
