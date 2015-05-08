@@ -1,5 +1,5 @@
 {
-  "ember-load-initializers.js": {
+  "ember-load-initializers/ember-load-initializers.js": {
     "imports": [],
     "exports": ["NOT IMPLEMENTED YET"]
   }
