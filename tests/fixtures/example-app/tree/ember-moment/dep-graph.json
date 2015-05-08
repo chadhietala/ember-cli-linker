@@ -1,5 +1,5 @@
 {
-  "ember-moment/computed.js": {
+  "ember-moment/ember-moment/computed.js": {
     "imports": [ 
       "exports",
       "ember-moment/computeds/moment",
@@ -8,7 +8,7 @@
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
   },
-  "ember-moment/computeds/ago.js": {
+  "ember-moment/ember-moment/computeds/ago.js": {
     "imports": [
       "exports",
       "ember",
@@ -17,7 +17,7 @@
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
   },
- "ember-moment/computeds/duration.js": {
+ "ember-moment/ember-moment/computeds/duration.js": {
     "imports": [
       "exports",
       "ember",
@@ -26,7 +26,7 @@
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
   },
-  "ember-moment/computeds/moment.js": {
+  "ember-moment/ember-moment/computeds/moment.js": {
     "imports": [
       "exports",
       "ember",
@@ -34,7 +34,7 @@
     ],
     "exports": [ "NOT IMPLEMENTED YET" ]
   },
-  "ember-moment/helpers/ago.js": {
+  "ember-moment/ember-moment/helpers/ago.js": {
     "imports": [
       "exports",
       "ember",
@@ -44,7 +44,7 @@
       "NOT IMPLEMENTED YET"
     ]
   },
-  "ember-moment/helpers/duration.js": {
+  "ember-moment/ember-moment/helpers/duration.js": {
     "imports": [
       "exports",
       "ember",
@@ -54,7 +54,7 @@
       "NOT IMPLEMENTED YET"
     ]
   },
-  "ember-moment/helpers/moment.js": {
+  "ember-moment/ember-moment/helpers/moment.js": {
     "imports": [
       "exports",
       "ember",

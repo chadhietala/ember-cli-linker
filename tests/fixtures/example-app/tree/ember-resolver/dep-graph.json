@@ -1,5 +1,5 @@
 {
-  "ember-resolver.js": {
+  "ember-resolver/ember-resolver.js": {
     "imports": [],
     "exports": ["NOT IMPLEMENTED YET"]
   }

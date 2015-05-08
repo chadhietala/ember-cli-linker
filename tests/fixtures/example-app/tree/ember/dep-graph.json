@@ -1,5 +1,5 @@
 {
-  "ember.js": {
+  "ember/ember.js": {
     "imports": ["exports", "npm:jquery"],
     "exports": ["NOT IMPLEMENTED YET"]
   }
