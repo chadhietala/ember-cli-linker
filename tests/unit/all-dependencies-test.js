@@ -86,7 +86,6 @@ describe('all dependencies unit', function() {
       var imports = AllDependencies.for('example-app/initializers/ember-moment');
       expect(imports).to.deep.equal({
         pkgName: 'example-app',
-        entry: 'example-app',
         imports: [
           'ember-moment/helpers/moment',
           'ember-moment/helpers/ago',
