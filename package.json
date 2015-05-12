@@ -34,6 +34,7 @@
     "broccoli-test-helpers": "0.0.8",
     "chai": "^2.2.0",
     "mocha": "^2.2.1",
+    "quick-temp": "^0.1.2",
     "sinon": "^1.14.1"
   }
 }
