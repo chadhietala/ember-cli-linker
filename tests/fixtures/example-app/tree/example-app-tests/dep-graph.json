@@ -1,0 +1,10 @@
+{
+  "example-app-tests/unit/components/foo-bar-test.js": {
+    "imports": [
+      "ember"
+    ],
+    "exports": [
+      "NOT IMPLEMENTED YET"
+    ]
+  }
+}

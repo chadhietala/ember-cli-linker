@@ -69,6 +69,8 @@ describe('pre-package acceptance', function () {
         'ember-resolver/ember-resolver.js',
         'ember/dep-graph.json',
         'ember/ember.js',
+        'example-app-tests/dep-graph.json',
+        'example-app-tests/unit/components/foo-bar-test.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/dep-graph.json',
@@ -112,7 +114,9 @@ describe('pre-package acceptance', function () {
         'example-app/config/environment.js',
         'example-app/dep-graph.json',
         'example-app/index.html',
-        'example-app/router.js'
+        'example-app/router.js',
+        'example-app-tests/dep-graph.json',
+        'example-app-tests/unit/components/foo-bar-test.js'
       ]);
 
     });
