@@ -2,6 +2,7 @@
 
 var nodes = require('../../lib/nodes');
 var expect = require('chai').expect;
+var path = require('path');
 
 describe('nodes', function() {
   var cwd = process.cwd();
@@ -17,10 +18,12 @@ describe('nodes', function() {
   describe('node', function() {
     it('should produce meta info for the app', function() {
       var nodeInfo = nodes.node('example-app', ['ember', 'jQuery'], {});
+      console.log(process.cwd())
       expect(nodeInfo).to.deep.eql({
         pkgPath: process.cwd(),
         pkgName: 'example-app',
-        imports: ['ember', 'jQuery']
+        imports: ['ember', 'jQuery'],
+        nodeModulesPath: path.join(process.cwd(), 'node_modules')
       });
     });
 
@@ -29,7 +32,8 @@ describe('nodes', function() {
       expect(nodeInfo).to.deep.eql({
         pkgPath: process.cwd(),
         pkgName: 'example-app-tests',
-        imports: ['test']
+        imports: ['test'],
+        nodeModulesPath: path.join(process.cwd(), 'node_modules')
       });
     });
   });
@@ -50,6 +54,7 @@ describe('nodes', function() {
         pkgPath: process.cwd(),
         pkgName: 'example-app',
         imports: [],
+        nodeModulesPath: path.join(process.cwd(), 'node_modules'),
         parent: {
           pkgPath: process.cwd(),
           entry: 'example-app',

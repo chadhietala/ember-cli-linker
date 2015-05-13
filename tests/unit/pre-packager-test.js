@@ -4,6 +4,7 @@ var PrePackager = require('../../lib/pre-packager');
 var AllDependencies = require('../../lib/all-dependencies');
 var expect = require('chai').expect;
 var temp = require('quick-temp');
+var path = require('path');
 
 describe('PrePackager#constructor', function() {
   var cwd = process.cwd();
@@ -54,7 +55,8 @@ describe('PrePackager#constructor', function() {
       expect(prePackager.generatePkgInfo('example-app')).to.deep.eql({
         pkgPath: process.cwd(),
         pkgName: 'example-app',
-        imports: ['ember', 'example-app/config/environment'] 
+        imports: ['ember', 'example-app/config/environment'],
+        nodeModulesPath: path.join(process.cwd(), 'node_modules')
       });
 
     });
@@ -85,7 +87,8 @@ describe('PrePackager#constructor', function() {
         'example-app': {
           parent: 'example-app',
           imports: ['ember-moment/ago'],
-          parentPath: process.cwd()
+          parentPath: process.cwd(),
+          nodeModulesPath: path.join(process.cwd(), 'node_modules')
         }
       } 
     });
