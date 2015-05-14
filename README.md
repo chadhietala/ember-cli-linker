@@ -1,5 +1,7 @@
 # Ember CLI Pre-Packager
 
+[![Build Status][travis-badge]][travis-badge-url] [![Coverage Status](https://coveralls.io/repos/chadhietala/ember-cli-pre-packager/badge.svg?branch=coveralls)](https://coveralls.io/r/chadhietala/ember-cli-pre-packager?branch=coveralls)
+
 The __Pre-Packager__ is the soon to be resolution phase for the Ember CLI build process. It's primary concern is resolving dependencies in a project and outputing a tree that represents the dependency graph.  This tree would then be passed to the __Packager__ that allows for declarative concatenation strategies. The resolution occurs via __dependency resolvers__. Out of the box the pre-packger has 3 depedency resolvers, __addon__, __npm__, and __esnext__, however the resolvers are dynamically looked up which creates a nice charateristic of modularity for resolving different types.
 
 ## High Level Design
