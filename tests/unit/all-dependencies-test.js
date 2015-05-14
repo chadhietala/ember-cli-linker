@@ -3,6 +3,7 @@
 var AllDependencies = require('../../lib/all-dependencies');
 var expect = require('chai').expect;
 var fs = require('fs-extra');
+var path = require('path');
 
 describe('all dependencies unit', function() {
   var appDepGraph;
@@ -93,7 +94,8 @@ describe('all dependencies unit', function() {
           'ember'
         ],
         parent: undefined,
-        pkgPath: process.cwd()
+        pkgPath: process.cwd(),
+        nodeModulesPath: path.join(process.cwd(), 'node_modules')
       });
     });
 

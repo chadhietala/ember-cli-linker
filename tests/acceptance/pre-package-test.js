@@ -76,7 +76,9 @@ describe('pre-package acceptance', function () {
         'example-app/dep-graph.json',
         'example-app/index.html',
         'example-app/initializers/ember-moment.js',
-        'example-app/router.js'
+        'example-app/router.js',
+        'lodash/lib/array/flatten.js',
+        'lodash/lib/array/uniq.js'
       ]);
     });
   });
@@ -116,7 +118,9 @@ describe('pre-package acceptance', function () {
         'example-app/index.html',
         'example-app/router.js',
         'example-app-tests/dep-graph.json',
-        'example-app-tests/unit/components/foo-bar-test.js'
+        'example-app-tests/unit/components/foo-bar-test.js',
+        'lodash/lib/array/flatten.js',
+        'lodash/lib/array/uniq.js'
       ]);
 
     });
