@@ -18,7 +18,6 @@ describe('nodes', function() {
   describe('node', function() {
     it('should produce meta info for the app', function() {
       var nodeInfo = nodes.node('example-app', ['ember', 'jQuery'], {});
-      console.log(process.cwd())
       expect(nodeInfo).to.deep.eql({
         pkgPath: process.cwd(),
         pkgName: 'example-app',
