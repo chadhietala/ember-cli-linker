@@ -4,9 +4,10 @@
   "description": "Provides pre-packaging for Ember CLI applcations",
   "main": "lib/pre-packager.js",
   "scripts": {
-    "test:debug": "mocha debug -R spec tests/**/*-test.js",
+    "test:debug": "node debug tests/runner",
     "test:watch": "mocha -R spec -w tests/**/*-test.js",
-    "test": "mocha -R spec tests/**/*-test.js"
+    "test": "node tests/runner.js",
+    "test:cover": "istanbul cover tests/runner.js"
   },
   "keywords": [
     "ember-cli"
@@ -33,6 +34,9 @@
     "broccoli-stew": "^0.2.1",
     "broccoli-test-helpers": "0.0.8",
     "chai": "^2.2.0",
+    "coveralls": "^2.11.2",
+    "glob": "^5.0.6",
+    "istanbul": "^0.3.14",
     "mocha": "^2.2.1",
     "quick-temp": "^0.1.2",
     "sinon": "^1.14.1"
