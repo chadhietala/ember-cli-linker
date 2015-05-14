@@ -126,8 +126,14 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('should depupe out dependency of dependency', function() {
-
+  it('should transpile regular es6 modules', function() {
+    return prePackager(generateTrees(), {
+      entries: ['example-app']
+    }).then(function(results) {
+      var babelified = fs.readFileSync(results.directory + '/lodash/lib/array/uniq.js', 'utf8');
+      expect(babelified.indexOf('=>')).to.be.lt(0);
+      expect(babelified.indexOf('...args')).to.be.lt(0);
+    });
   });
   
   // TODO
