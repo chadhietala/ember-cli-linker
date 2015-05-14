@@ -98,3 +98,5 @@ The cache key here is layered from least expensive to most expensive:
 - Finally, if the hashed contents of the module are different we build
 
 This strategy allows for imports from the same module to be added/removed/swapped and the built module to retain the parity of the graph.
+
+[travis-badge]: https://travis-ci.org/chadhietala/ember-cli-pre-packager.svg?branch=master
