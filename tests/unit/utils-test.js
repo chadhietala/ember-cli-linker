@@ -11,25 +11,25 @@ describe('utils', function() {
     it('should pass you information for a node', function() {
       var info = utils.getImportInfo('example-app/config/environment', 'example-app');
       expect(info).to.deep.equal({
-        type: 'addon',
+        type: 'ember-app',
         name: 'example-app/config/environment',
         pkgName: 'example-app'
       });
     });
 
     it('should pass you information for an addon', function() {
-      var info = utils.getImportInfo('ember/get');
+      var info = utils.getImportInfo('ember/get', null, { ember: { inputPath: process.cwd() } } );
       expect(info).to.deep.equal({
-        type: 'addon',
+        type: 'ember-app',
         name: 'ember/ember/get',
         pkgName: 'ember'
       });
     });
 
     it('should pass you information for an addon that is a file', function() {
-      var info = utils.getImportInfo('ember');
+      var info = utils.getImportInfo('ember', null, { ember: { inputPath: process.cwd() } });
       expect(info).to.deep.equal({
-        type: 'addon',
+        type: 'ember-app',
         name: 'ember/ember',
         pkgName: 'ember'
       });
