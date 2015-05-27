@@ -8,25 +8,14 @@ var expect          = require('chai').expect;
 var fs              = require('fs-extra');
 var sinon           = require('sinon');
 var walkSync        = require('walk-sync');
+var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
+var generateTrees = require('../helpers/generate-trees');
 var find            = stew.find;
-var rename          = stew.rename;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
 
 function clone(a) {
    return JSON.parse(JSON.stringify(a));
-}
-
-function generateTrees() {
-  return walkSync('tests/fixtures/example-app/tree').filter(function(relativePath) {
-    return relativePath.slice(-1) === '/' && (relativePath.split('/').filter(function(item) {
-      return item !== '';
-    })).length === 1;
-  }).map(function(dir) {
-    return rename(find('tree/' + dir), function(relativePath) {
-      return relativePath.replace('tree/', '');
-    });
-  });
 }
 
 describe('pre-package acceptance', function () {
@@ -41,6 +30,7 @@ describe('pre-package acceptance', function () {
       return paths.filter(function(path) { return !/\/$/.test(path); });
     }
   });
+  var paths = walkSync('tests/fixtures/example-app/tree');
 
   afterEach(function () {
     return cleanupBuilders();
@@ -53,8 +43,9 @@ describe('pre-package acceptance', function () {
   });
 
   it('should only include files in the dependency graph', function () {
-    return prePackager(generateTrees(), {
-      entries: ['example-app']
+    return prePackager(generateTrees(paths), {
+      entries: ['example-app'],
+      treeDescriptors: generateTreeDescriptors(paths)
     }).then(function(results) {
       expect(results.files.sort()).to.deep.equal([
         'browserified/ember-moment/ember-moment-legacy.js',
@@ -69,16 +60,17 @@ describe('pre-package acceptance', function () {
         'ember-resolver/ember-resolver.js',
         'ember/dep-graph.json',
         'ember/ember.js',
-        'example-app-tests/dep-graph.json',
-        'example-app-tests/unit/components/foo-bar-test.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/dep-graph.json',
         'example-app/index.html',
         'example-app/initializers/ember-moment.js',
         'example-app/router.js',
+        'example-app/tests/dep-graph.json',
+        'example-app/tests/unit/components/foo-bar-test.js',
         'lodash/lib/array/flatten.js',
-        'lodash/lib/array/uniq.js'
+        'lodash/lib/array/uniq.js',
+        'lodash/lib/compat.js'
       ]);
     });
   });
@@ -90,8 +82,9 @@ describe('pre-package acceptance', function () {
 
     var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/tree/example-app/initializers/ember-moment.js');
 
-    return prePackager(generateTrees(), {
-      entries: ['example-app']
+    return prePackager(generateTrees(paths), {
+      entries: ['example-app'],
+      treeDescriptors: generateTreeDescriptors(paths)
     }).then(function(results) {
 
       delete graphClone['example-app/initializers/ember-moment.js'];
@@ -117,18 +110,20 @@ describe('pre-package acceptance', function () {
         'example-app/dep-graph.json',
         'example-app/index.html',
         'example-app/router.js',
-        'example-app-tests/dep-graph.json',
-        'example-app-tests/unit/components/foo-bar-test.js',
+        'example-app/tests/dep-graph.json',
+        'example-app/tests/unit/components/foo-bar-test.js',
         'lodash/lib/array/flatten.js',
-        'lodash/lib/array/uniq.js'
+        'lodash/lib/array/uniq.js',
+        'lodash/lib/compat.js'
       ]);
 
     });
   });
 
   it('should transpile regular es6 modules', function() {
-    return prePackager(generateTrees(), {
-      entries: ['example-app']
+    return prePackager(generateTrees(paths), {
+      entries: ['example-app'],
+      treeDescriptors: generateTreeDescriptors(paths)
     }).then(function(results) {
       var babelified = fs.readFileSync(results.directory + '/lodash/lib/array/uniq.js', 'utf8');
       expect(babelified.indexOf('=>')).to.be.lt(0);
@@ -156,8 +151,9 @@ describe('pre-package acceptance', function () {
     });
 
     it('should not re-browserfify if the package has not changed', function() {
-      return prePackager(generateTrees(), {
-        entries: ['example-app']
+      return prePackager(generateTrees(paths), {
+        entries: ['example-app'],
+        treeDescriptors: generateTreeDescriptors(paths)
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
@@ -171,8 +167,9 @@ describe('pre-package acceptance', function () {
 
     it('should re-browserfify if the package changed', function() {
       var moment = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/lib/month.js';
-      return prePackager(generateTrees(), {
-        entries: ['example-app']
+      return prePackager(generateTrees(paths), {
+        entries: ['example-app'],
+        treeDescriptors: generateTreeDescriptors(paths)
       }).then(function(results) {
         fs.writeFileSync(moment, 'var a = "a";');
         return results.builder();
