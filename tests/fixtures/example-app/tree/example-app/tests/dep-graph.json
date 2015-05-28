@@ -1,5 +1,5 @@
 {
-  "example-app-tests/unit/components/foo-bar-test.js": {
+  "example-app/tests/unit/components/foo-bar-test.js": {
     "imports": [
       "ember"
     ],
