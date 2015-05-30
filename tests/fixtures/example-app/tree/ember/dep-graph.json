@@ -1,5 +1,5 @@
 {
-  "ember/ember.js": {
+  "ember.js": {
     "imports": ["exports", "npm:jquery", "lodash/lib/array/uniq"],
     "exports": ["NOT IMPLEMENTED YET"]
   }

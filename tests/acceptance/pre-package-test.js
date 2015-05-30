@@ -50,16 +50,16 @@ describe('pre-package acceptance', function () {
       expect(results.files.sort()).to.deep.equal([
         'browserified/ember-moment/ember-moment-legacy.js',
         'browserified/ember/ember-legacy.js',
+        'ember-load-initializers.js',
         'ember-load-initializers/dep-graph.json',
-        'ember-load-initializers/ember-load-initializers.js',
         'ember-moment/dep-graph.json',
-        'ember-moment/ember-moment/helpers/ago.js',
-        'ember-moment/ember-moment/helpers/duration.js',
-        'ember-moment/ember-moment/helpers/moment.js',
+        'ember-moment/helpers/ago.js',
+        'ember-moment/helpers/duration.js',
+        'ember-moment/helpers/moment.js',
+        'ember-resolver.js',
         'ember-resolver/dep-graph.json',
-        'ember-resolver/ember-resolver.js',
+        'ember.js',
         'ember/dep-graph.json',
-        'ember/ember.js',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/dep-graph.json',
@@ -98,13 +98,13 @@ describe('pre-package acceptance', function () {
       fs.outputJSONSync(graphPath, graph);
       fs.writeFileSync(initializer, '');
       
-      expect(results.files).to.deep.equal([
-        'ember/dep-graph.json',
-        'ember/ember.js',
+      expect(results.files.sort()).to.deep.equal([
+        'ember-load-initializers.js',
         'ember-load-initializers/dep-graph.json',
-        'ember-load-initializers/ember-load-initializers.js',
+        'ember-resolver.js',
         'ember-resolver/dep-graph.json',
-        'ember-resolver/ember-resolver.js',
+        'ember.js',
+        'ember/dep-graph.json',
         'example-app/app.js',
         'example-app/config/environment.js',
         'example-app/dep-graph.json',
