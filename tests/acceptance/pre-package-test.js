@@ -97,8 +97,8 @@ describe('pre-package acceptance', function () {
       // TODO find a better way of restoring this
       fs.outputJSONSync(graphPath, graph);
       fs.writeFileSync(initializer, '');
-      
       expect(results.files.sort()).to.deep.equal([
+        'browserified/ember/ember-legacy.js',
         'ember-load-initializers.js',
         'ember-load-initializers/dep-graph.json',
         'ember-resolver.js',
