@@ -130,6 +130,10 @@ describe('pre-package acceptance', function () {
       expect(babelified.indexOf('...args')).to.be.lt(0);
     });
   });
+
+  it('should just sync all the files if the graph is stable', function() {
+    
+  });
   
   // TODO
   // Spying on functions with broccoli-test-helpers is no bueno
