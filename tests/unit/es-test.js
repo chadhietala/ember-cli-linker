@@ -22,7 +22,7 @@ describe('es resolver', function() {
   it('should sync forward non-main file it\'s imports', function() {
     var importInfo = new Import({
       importer: 'ember',
-      pkgName: 'lodash',
+      packageName: 'lodash',
       name: 'lodash/lib/array/uniq',
       type: 'es'
     });
@@ -41,7 +41,7 @@ describe('es resolver', function() {
   it('should sync forward main file it\'s imports', function() {
     var importInfo = new Import({
       importer: 'ember',
-      pkgName: 'lodash',
+      packageName: 'lodash',
       name: 'lodash',
       type: 'es'
     });
