@@ -4,6 +4,7 @@ var AllDependencies = require('../../lib/all-dependencies');
 var Package = require('../../lib/models/package');
 var Descriptor = require('../../lib/models/descriptor');
 var expect = require('chai').expect;
+var sinon = require('sinon');
 
 function modelEquals(result, expectation) {
   Object.keys(result).forEach(function(key) {
@@ -69,6 +70,58 @@ describe('all dependencies unit', function() {
         },
         dedupedImports: ['ember', 'jquery']
       }));
+    });
+
+    it('should perform an idempotent update if the package exists', function() {
+      AllDependencies.update(descriptor, dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+      var updateRelativePathsCalled = false;
+
+      desc.updateRelativePaths = function() {
+        updateRelativePathsCalled = true;
+      };
+
+      AllDependencies.update(descriptor, dependencies);
+
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app']).to.deep.eql(new Package({
+        descriptor: new Descriptor(descriptor),
+        graph: dependencies,
+        imports: {
+          'example-app/app': ['ember'],
+          'example-app/router': ['ember', 'jquery']
+        },
+        dedupedImports: ['ember', 'jquery']
+      }));
+
+      expect(updateRelativePathsCalled).to.eql(true);
+    });
+
+    it('should perform update the package if it differs', function() {
+      AllDependencies.update(descriptor, dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+      var updateRelativePathsCalled = false;
+
+      desc.updateRelativePaths = function() {
+        updateRelativePathsCalled = true;
+      };
+
+      AllDependencies.update(descriptor, dependencies);
+
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app']).to.deep.eql(new Package({
+        descriptor: new Descriptor(descriptor),
+        graph: dependencies,
+        imports: {
+          'example-app/app': ['ember'],
+          'example-app/router': ['ember', 'jquery']
+        },
+        dedupedImports: ['ember', 'jquery']
+      }));
+
+      expect(updateRelativePathsCalled).to.eql(true);
     });
   });
 
