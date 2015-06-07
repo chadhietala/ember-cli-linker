@@ -4,11 +4,14 @@ var AllDependencies = require('../../lib/all-dependencies');
 var Dependency = require('../../lib/models/dependency');
 var Descriptor = require('../../lib/models/descriptor');
 var expect = require('chai').expect;
-var clone = require('../../lib/utils/array').clone;
 
+function modelEquals(result, expectation) {
+  Object.keys(result).forEach(function(key) {
+    expect(result[key]).to.deep.equal(expectation[key]);
+  });
+}
 
 var descriptor = {
-  name: 'example-app',
   root: '/workspace/example-app',
   packageName: 'example-app',
   srcDir: 'foo/bar/baz_tmp',
@@ -37,7 +40,7 @@ var dependencies = {
   }
 };
 
-describe('all dependencies unit', function() {
+describe.only('all dependencies unit', function() {
 
   beforeEach(function () {
     AllDependencies._graph = {};
@@ -139,16 +142,18 @@ describe('all dependencies unit', function() {
         pkg: { name: 'bazing', version: '9000.0.0' },
         relativePaths: undefined,
         parent: undefined,
-        name: 'bazing',
         srcDir: 'foo/bar/tmp_fizzy'
       };
       AllDependencies.add(desc, 'bazing/a', { imports: ['bazing/b'] });
       var dependency = AllDependencies.for('bazing');
-
-      expect(dependency.descriptor).to.deep.eql(new Descriptor(desc));
-      expect(dependency.graph).to.deep.eql({ 'bazing/a': { imports: [ 'bazing/b' ] } });
-      expect(dependency.imports).to.deep.eql({ 'bazing/a': [ 'bazing/b' ] });
+      modelEquals(dependency.descriptor, new Descriptor(desc));
+      expect(dependency.graph).to.deep.eql({
+        'bazing/a': { imports: [ 'bazing/b' ] }
+      });
       expect(dependency.dedupedImports).to.deep.eql([ 'bazing/b' ]);
+      expect(dependency.imports).to.deep.eql({
+        'bazing/a': [ 'bazing/b' ]
+      });
     }); 
 
     it('should add an item to the graph if it already exists', function() {
@@ -159,14 +164,13 @@ describe('all dependencies unit', function() {
         pkg: { name: 'bazing', version: '9000.0.0' },
         relativePaths: undefined,
         parent: undefined,
-        name: 'bazing',
         srcDir: 'foo/bar/tmp_fizzy'
       };
       AllDependencies.add(desc, 'bazing/a', { imports: ['bazing/b'] });
       AllDependencies.add(desc, 'bazing/b', { imports: [] });
       var dependency = AllDependencies.for('bazing');
 
-      expect(dependency.descriptor).to.deep.eql(new Descriptor(desc));
+      modelEquals(dependency.descriptor, new Descriptor(desc));
       expect(dependency.graph).to.deep.eql({
         'bazing/a': { imports: [ 'bazing/b' ] },
         'bazing/b': { imports: [] }
