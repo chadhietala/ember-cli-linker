@@ -1,7 +1,7 @@
 'use strict';
 
 var AllDependencies = require('../../lib/all-dependencies');
-var Dependency = require('../../lib/models/dependency');
+var Package = require('../../lib/models/package');
 var Descriptor = require('../../lib/models/descriptor');
 var expect = require('chai').expect;
 
@@ -48,9 +48,9 @@ describe.only('all dependencies unit', function() {
   });
 
   describe('update', function () {
-    it('should update the graph with a new Dependency model', function() {
+    it('should update the graph with a new Package model', function() {
       AllDependencies.update(descriptor, dependencies);
-      expect(AllDependencies._graph['example-app'] instanceof Dependency);
+      expect(AllDependencies._graph['example-app'] instanceof Package);
     });
 
     it('should wrap the descriptor in a Descriptor model', function() {
@@ -58,9 +58,9 @@ describe.only('all dependencies unit', function() {
       expect(AllDependencies._graph['example-app'].descriptor instanceof Descriptor);
     });
 
-    it('should add the dependency to the graph', function() {
+    it('should add the package to the graph', function() {
       AllDependencies.update(descriptor, dependencies);
-      expect(AllDependencies._graph['example-app']).to.deep.eql(new Dependency({
+      expect(AllDependencies._graph['example-app']).to.deep.eql(new Package({
         descriptor: new Descriptor(descriptor),
         graph: dependencies,
         imports: {
@@ -75,7 +75,7 @@ describe.only('all dependencies unit', function() {
   describe('for', function() {
     it('should return a graph for a package', function() {
       AllDependencies.update(descriptor, dependencies);
-      expect(AllDependencies.for('example-app')).to.deep.equal(new Dependency({
+      expect(AllDependencies.for('example-app')).to.deep.equal(new Package({
         descriptor: new Descriptor(descriptor),
         graph: dependencies,
         imports: {
@@ -145,13 +145,13 @@ describe.only('all dependencies unit', function() {
         srcDir: 'foo/bar/tmp_fizzy'
       };
       AllDependencies.add(desc, 'bazing/a', { imports: ['bazing/b'] });
-      var dependency = AllDependencies.for('bazing');
-      modelEquals(dependency.descriptor, new Descriptor(desc));
-      expect(dependency.graph).to.deep.eql({
+      var pack = AllDependencies.for('bazing');
+      modelEquals(pack.descriptor, new Descriptor(desc));
+      expect(pack.graph).to.deep.eql({
         'bazing/a': { imports: [ 'bazing/b' ] }
       });
-      expect(dependency.dedupedImports).to.deep.eql([ 'bazing/b' ]);
-      expect(dependency.imports).to.deep.eql({
+      expect(pack.dedupedImports).to.deep.eql([ 'bazing/b' ]);
+      expect(pack.imports).to.deep.eql({
         'bazing/a': [ 'bazing/b' ]
       });
     }); 
@@ -168,18 +168,18 @@ describe.only('all dependencies unit', function() {
       };
       AllDependencies.add(desc, 'bazing/a', { imports: ['bazing/b'] });
       AllDependencies.add(desc, 'bazing/b', { imports: [] });
-      var dependency = AllDependencies.for('bazing');
+      var pack = AllDependencies.for('bazing');
 
-      modelEquals(dependency.descriptor, new Descriptor(desc));
-      expect(dependency.graph).to.deep.eql({
+      modelEquals(pack.descriptor, new Descriptor(desc));
+      expect(pack.graph).to.deep.eql({
         'bazing/a': { imports: [ 'bazing/b' ] },
         'bazing/b': { imports: [] }
       });
-      expect(dependency.imports).to.deep.eql({
+      expect(pack.imports).to.deep.eql({
         'bazing/a': [ 'bazing/b' ],
         'bazing/b': [ ]
       });
-      expect(dependency.dedupedImports).to.deep.eql([ 'bazing/b' ]);
+      expect(pack.dedupedImports).to.deep.eql([ 'bazing/b' ]);
     }); 
   });
 });
