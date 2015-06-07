@@ -4,7 +4,16 @@ var AllDependencies = require('../../lib/all-dependencies');
 var Package = require('../../lib/models/package');
 var Descriptor = require('../../lib/models/descriptor');
 var expect = require('chai').expect;
-var sinon = require('sinon');
+
+function clone(obj) {
+  var ret = {};
+
+  Object.keys(obj).forEach(function(item)  {
+    ret[item] = obj[item];
+  });
+
+  return ret;
+}
 
 function modelEquals(result, expectation) {
   Object.keys(result).forEach(function(key) {
@@ -12,25 +21,7 @@ function modelEquals(result, expectation) {
   });
 }
 
-var descriptor = {
-  root: '/workspace/example-app',
-  packageName: 'example-app',
-  srcDir: 'foo/bar/baz_tmp',
-  nodeModulesPath: '/workspace/example-app/node_modules',
-  pkg: {
-    name: 'example-app',
-    version: '0.0.1',
-    dependencies: {
-      lodash: '1.0.0'
-    }
-  },
-  relativePaths: [
-    'example-app/',
-    'example-app/app.js',
-    'example-app/router.js'
-  ],
-  parent: null
-};
+
 
 var dependencies = {
   'example-app/app': {
@@ -42,11 +33,46 @@ var dependencies = {
 };
 
 describe('all dependencies unit', function() {
-
+  var dependencies, descriptor;
   beforeEach(function () {
     AllDependencies._graph = {};
     AllDependencies._synced = {};
+
+    dependencies = {
+      'example-app/app': {
+        imports: ['ember']
+      },
+      'example-app/router': {
+        imports: ['ember', 'jquery']
+      }
+    };
+
+    descriptor = {
+      root: '/workspace/example-app',
+      packageName: 'example-app',
+      srcDir: 'foo/bar/baz_tmp',
+      nodeModulesPath: '/workspace/example-app/node_modules',
+      pkg: {
+        name: 'example-app',
+        version: '0.0.1',
+        dependencies: {
+          lodash: '1.0.0'
+        }
+      },
+      relativePaths: [
+        'example-app/',
+        'example-app/app.js',
+        'example-app/router.js'
+      ],
+      parent: null
+    };
   });
+
+  function simulateSync(desc) {
+    AllDependencies._synced[desc.packageName] = ['example-app/app', 'example-app/router'];
+    AllDependencies._synced['ember'] = [];
+    AllDependencies._synced['jquery'] = [];
+  }
 
   describe('update', function () {
     it('should update the graph with a new Package model', function() {
@@ -98,30 +124,105 @@ describe('all dependencies unit', function() {
       expect(updateRelativePathsCalled).to.eql(true);
     });
 
-    it('should perform update the package if it differs', function() {
+    it('should update the graph if imports are removed', function() {
       AllDependencies.update(descriptor, dependencies);
+      simulateSync(descriptor);
+      var modifiedDependencies = clone(dependencies);
       var desc = AllDependencies.for(descriptor.packageName).descriptor;
-      var updateRelativePathsCalled = false;
 
-      desc.updateRelativePaths = function() {
-        updateRelativePathsCalled = true;
-      };
+      desc.updateRelativePaths = function() {};
+      modifiedDependencies['example-app/app'].imports = [];
 
-      AllDependencies.update(descriptor, dependencies);
-
+      AllDependencies.update(descriptor, modifiedDependencies);
       delete desc.updateRelativePaths;
 
-      expect(AllDependencies._graph['example-app']).to.deep.eql(new Package({
-        descriptor: new Descriptor(descriptor),
-        graph: dependencies,
-        imports: {
-          'example-app/app': ['ember'],
-          'example-app/router': ['ember', 'jquery']
-        },
-        dedupedImports: ['ember', 'jquery']
-      }));
+      expect(AllDependencies._graph['example-app'].graph).to.deep.eql(modifiedDependencies);
+    });
 
-      expect(updateRelativePathsCalled).to.eql(true);
+    it('should update the graph if imports are removed', function() {
+      AllDependencies.update(descriptor, dependencies);
+      simulateSync(descriptor);
+      var modifiedDependencies = clone(dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+
+      desc.updateRelativePaths = function() {};
+      modifiedDependencies['example-app/app'].imports = [];
+
+      AllDependencies.update(descriptor, modifiedDependencies);
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app'].imports).to.deep.eql({
+        'example-app/app': [],
+        'example-app/router': ['ember', 'jquery']
+      });
+    });
+
+    it('should not remove items from dedupedImports if something else has a pointer into that import', function() {
+      AllDependencies.update(descriptor, dependencies);
+      simulateSync(descriptor);
+      var modifiedDependencies = clone(dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+
+      desc.updateRelativePaths = function() {};
+      modifiedDependencies['example-app/app'].imports = [];
+
+      AllDependencies.update(descriptor, modifiedDependencies);
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app'].dedupedImports).to.deep.eql(['ember', 'jquery']);
+    });
+
+    it('should add to dedupedImports if an import is added', function() {
+      AllDependencies.update(descriptor, dependencies);
+      simulateSync(descriptor);
+      var modifiedDependencies = clone(dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+
+      desc.updateRelativePaths = function() {};
+      modifiedDependencies['example-app/app'].imports = ['ember', 'lodash'];
+
+      AllDependencies.update(descriptor, modifiedDependencies);
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app'].dedupedImports).to.deep.eql(['ember', 'lodash', 'jquery',]);
+    });
+
+    it('should add an import to imports if an import is added', function() {
+      AllDependencies.update(descriptor, dependencies);
+      simulateSync(descriptor);
+      var modifiedDependencies = clone(dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+
+      desc.updateRelativePaths = function() {};
+      modifiedDependencies['example-app/app'].imports = ['ember', 'lodash'];
+
+      AllDependencies.update(descriptor, modifiedDependencies);
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app'].imports).to.deep.eql({
+        'example-app/app': ['ember', 'lodash'],
+        'example-app/router': ['ember', 'jquery']
+      });
+    });
+
+    it('should update the graph if an import is added', function() {
+      AllDependencies.update(descriptor, dependencies);
+      AllDependencies._synced[descriptor.packageName] = ['example-app/app', 'example-app/router'];
+      AllDependencies._synced['ember'] = [];
+      AllDependencies._synced['jquery'] = [];
+      var modifiedDependencies = clone(dependencies);
+      var desc = AllDependencies.for(descriptor.packageName).descriptor;
+
+      desc.updateRelativePaths = function() {};
+      modifiedDependencies['example-app/app'].imports = ['ember', 'lodash'];
+
+      AllDependencies.update(descriptor, modifiedDependencies);
+      delete desc.updateRelativePaths;
+
+      expect(AllDependencies._graph['example-app'].graph).to.deep.eql({
+        'example-app/app': { imports: ['ember', 'lodash'] },
+        'example-app/router': { imports: ['ember', 'jquery'] }
+      });
     });
   });
 
