@@ -8,7 +8,7 @@ var temp = require('quick-temp');
 var Import = require('../../lib/models/import');
 var expect = require('chai').expect;
 
-describe('es resolver', function() {
+describe.skip('es resolver', function() {
   var paths = walkSync('tests/fixtures/example-app/tree');
 
   beforeEach(function() {

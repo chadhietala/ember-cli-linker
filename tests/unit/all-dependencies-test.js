@@ -40,7 +40,7 @@ var dependencies = {
   }
 };
 
-describe.only('all dependencies unit', function() {
+describe('all dependencies unit', function() {
 
   beforeEach(function () {
     AllDependencies._graph = {};

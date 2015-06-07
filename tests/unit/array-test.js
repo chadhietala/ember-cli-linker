@@ -39,4 +39,39 @@ describe('array', function() {
       expect(array.compact([1, 2, null, undefined, -1])).to.deep.eql([1,2, -1]);
     });
   });
+
+  describe('contains', function() {
+    it('should return true if the item is in the array', function() {
+      expect(array.contains([1,2,3], 1)).to.eql(true);
+    });
+
+    it('should return false if the item is in the array', function() {
+      expect(array.contains([1,2,3], 5)).to.eql(false);
+    });
+  });
+
+  describe('flatten', function() {
+    it('should flatten a 2d array', function() {
+      expect(array.flatten([[1], [2], [3]])).to.deep.eql([1,2,3]);
+    });
+  });
+
+  describe('without', function() {
+    it('should return an array without the values specified', function() {
+      var exclude = [2,3];
+      expect(array.without([1,2,3], exclude)).to.deep.eql([1]);
+    });
+  });
+
+  describe('intersect', function() {
+    it('should return the intersection of 2 arrays', function() {
+      expect(array.intersect([1,2,3], [1,4,5])).to.deep.eql([1]);
+    });
+  });
+
+  describe('head', function() {
+    it('should return the head of the array', function() {
+      expect(array.head([1,2,3])).to.deep.eql(1);
+    });
+  });
 });

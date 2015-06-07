@@ -18,7 +18,7 @@ function clone(a) {
    return JSON.parse(JSON.stringify(a));
 }
 
-describe('pre-package acceptance', function () {
+describe.skip('pre-package acceptance', function () {
   var fixturePath = path.resolve('./tests/fixtures/example-app');
   var testSubject = function() {
       return new PrePackager(arguments[0], arguments[1]);
