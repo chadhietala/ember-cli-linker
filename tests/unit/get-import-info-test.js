@@ -34,7 +34,7 @@ describe('getImportInfo', function() {
     expect(props.length).to.eql(4);
     expect(props).to.deep.eql([
       'importer',
-      'pkgName',
+      'packageName',
       'name',
       'type'
     ]);

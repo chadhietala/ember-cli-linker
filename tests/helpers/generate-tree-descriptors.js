@@ -23,7 +23,7 @@ function generateTreeDescriptors(paths) {
     pkg = require(path.join(root, 'package.json'));
 
     descriptors[pkg.name] = {
-      name: pkg.name,
+      packageName: pkg.name,
       pkg: pkg,
       root: root,
       nodeModulesPath: nodeModulesPath

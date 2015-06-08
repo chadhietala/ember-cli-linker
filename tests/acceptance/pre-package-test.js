@@ -75,7 +75,7 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('should remove files from the output if the imports are removed', function () {
+  it.skip('should remove files from the output if the imports are removed', function () {
     var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/tree/example-app/dep-graph.json');
     var graph = fs.readJSONSync(graphPath);
     var graphClone = clone(graph);
@@ -120,7 +120,8 @@ describe('pre-package acceptance', function () {
     });
   });
 
-  it('should transpile regular es6 modules', function() {
+  it.skip('should transpile regular es6 modules', function() {
+    console.log(paths);
     return prePackager(generateTrees(paths), {
       entries: ['example-app'],
       treeDescriptors: generateTreeDescriptors(paths)
@@ -133,7 +134,7 @@ describe('pre-package acceptance', function () {
   
   // TODO
   // Spying on functions with broccoli-test-helpers is no bueno
-  describe('node_modules rebuild', function() {
+  describe.skip('node_modules rebuild', function() {
     beforeEach(function() {
       prePackager = makeTestHelper({
         fixturePath: fixturePath,
