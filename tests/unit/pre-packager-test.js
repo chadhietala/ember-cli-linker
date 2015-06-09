@@ -185,10 +185,13 @@ describe('PrePackager', function () {
         };
       };
 
+
       var diffs = prePackager.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
+
       expect(AllDependencies.getSynced('example-app')).to.deep.eql(['example-app/a.js']);
+
       expect(AllDependencies.for('example-app').imports).to.deep.eql({
         'example-app/a': []
       });
@@ -255,7 +258,6 @@ describe('PrePackager', function () {
     });
 
     it('should perform an idempotent operation if there edges into a dropping edge', function() {
-
       prePackager.graphHashes = generateGraphHashes();
       prePackager.graphHashes['foobiz'] = {
         graph: {
@@ -333,6 +335,116 @@ describe('PrePackager', function () {
       expect(AllDependencies.getSynced()).to.deep.eql({
         'example-app': ['example-app/a.js', 'example-app/b.js'],
         foobiz: ['foobiz/foo.js']
+      });
+    });
+
+    it('should drop transitive dependency if the entry node is dropped', function() {
+
+      prePackager.graphHashes = generateGraphHashes();
+      prePackager.graphHashes['example-app'].graph['example-app/b'].imports.push('foobiz/foo');
+
+      prePackager.graphHashes['foobiz'] = {
+        graph: {
+          'foobiz/foo': {
+            imports: ['bar/bar']
+          }
+        },
+        name: 'foobiz',
+        hash: 'dbd7abe86d2bf760de14681cf990eced'
+      };
+
+      prePackager.graphHashes['bar'] = {
+        graph: {
+          'bar/bar': {
+            imports: []
+          }
+        },
+        name: 'bar',
+        hash: '9b7c669dd11a0333039ad97cb5a92b17'
+      };
+
+      AllDependencies.update({
+        root: process.cwd(),
+        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
+        packageName: 'example-app',
+        pkg: { name: 'example-app', version: '1.0.0' },
+        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
+        parent: null,
+        srcDir: process.cwd() + path.sep + 'tmp_foo'
+      }, prePackager.graphHashes['example-app'].graph);
+
+      AllDependencies.update({
+        root: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz',
+        nodeModulesPath: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + path.sep + 'node_modules',
+        packageName: 'foobiz',
+        pkg: { name: 'foobiz', version: '1.0.0' },
+        relativePaths: ['foobiz/', 'foobiz/foo.js'],
+        parent: null,
+        srcDir: process.cwd() + path.sep + 'tmp_foobiz'
+      }, prePackager.graphHashes['foobiz'].graph);
+
+      AllDependencies.update({
+        root: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + 'node_modules' + 'bar',
+        nodeModulesPath: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + path.sep + 'node_modules' + path.sep + 'bar' + 'node_modules',
+        packageName: 'bar',
+        pkg: { name: 'bar', version: '1.0.0' },
+        relativePaths: ['bar/', 'bar/bar.js'],
+        parent: null,
+        srcDir: process.cwd() + path.sep + 'tmp_bar'
+      }, prePackager.graphHashes['bar'].graph);
+
+      AllDependencies.synced('example-app', 'example-app/a.js');
+      AllDependencies.synced('example-app', 'example-app/b.js');
+      AllDependencies.synced('foobiz', 'foobiz/foo.js');
+      AllDependencies.synced('bar', 'bar/bar.js');
+
+      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
+        return ['example-app/', 'example-app/a.js'];
+      };
+
+      prePackager.hashGraphs = function() {
+        return {
+          'example-app': {
+            name: 'example-app',
+            hash: 'c4dedac40c806eb428edc096c4bd6bfb',
+            graph: {
+              'example-app/a' : {
+                imports: ['example-app/b']
+              },
+              'example-app/b': {
+                imports: []
+              }
+            }
+          },
+          'foobiz': {
+            graph: {
+              'foobiz/foo': {
+                imports: ['bar/bar']
+              }
+            },
+            name: 'foobiz',
+            hash: 'dbd7abe86d2bf760de14681cf990eced'
+          },
+          bar: {
+            graph: {
+              'bar/bar': {
+                imports: []
+              }
+            },
+            name: 'bar',
+            hash: '9b7c669dd11a0333039ad97cb5a92b17'
+          }
+        };
+      };
+
+      var diffs = prePackager.diffGraph();
+
+      // Simulating the edge being placed back in by resolving foobiz/foo
+      AllDependencies.synced('example-app', 'example-app/b.js');
+
+      expect(diffs).to.deep.eql(['example-app']);
+      expect(AllDependencies.getSynced()).to.deep.eql({
+        'example-app': ['example-app/a.js', 'example-app/b.js']
       });
     });
   });
