@@ -52,6 +52,7 @@ describe('es resolver', function() {
     resolver.resolve(tempDir, importInfo, {
       treeDescriptors: generateTreeDescriptors(paths)
     });
+
     expect(resolver.syncForwardDependency.callCount).to.eql(4);
     expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/lodash.js');
     expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/uniq.js');
