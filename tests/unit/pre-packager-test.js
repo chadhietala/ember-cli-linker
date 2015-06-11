@@ -26,6 +26,18 @@ function generateGraphHashes() {
   };
 }
 
+function sync(packages) {
+  packages.forEach(function(pack) {
+    AllDependencies.synced.apply(AllDependencies, pack);
+  });
+}
+
+function updatePackages(packages) {
+  packages.forEach(function(pack) {
+    AllDependencies.update.apply(AllDependencies, pack);
+  });
+}
+
 describe('PrePackager', function () {
   var prePackager;
   var paths = walkSync('tests/fixtures/example-app/tree');
@@ -139,7 +151,7 @@ describe('PrePackager', function () {
   });
 
   describe('diffGraph', function() {
-    it('should perform an idempotent diff if the graphHahes exist and hashes are the same', function() {
+    it('should perform an idempotent diff if the graphHashes exist and hashes are the same', function() {
       prePackager.graphHashes = generateGraphHashes();
 
       prePackager.hashGraphs = function() {
@@ -153,19 +165,14 @@ describe('PrePackager', function () {
     it('should align the graph if an import is removed', function() {
 
       prePackager.graphHashes = generateGraphHashes();
-      
-      AllDependencies.update({
-        root: process.cwd(),
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
-        packageName: 'example-app',
-        pkg: { name: 'example-app', version: '1.0.0' },
-        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foo'
-      }, prePackager.graphHashes['example-app'].graph);
+      var graphHashes = prePackager.graphHashes;
 
-      AllDependencies.synced('example-app', 'example-app/a.js');
-      AllDependencies.synced('example-app', 'example-app/b.js');
+      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].graph);
+
+      sync([
+        ['example-app', 'example-app/a.js'],
+        ['example-app', 'example-app/b.js']
+      ]);
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
         return ['example-app/', 'example-app/a.js'];
@@ -185,13 +192,10 @@ describe('PrePackager', function () {
         };
       };
 
-
       var diffs = prePackager.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
-
       expect(AllDependencies.getSynced('example-app')).to.deep.eql(['example-app/a.js']);
-
       expect(AllDependencies.for('example-app').imports).to.deep.eql({
         'example-app/a': []
       });
@@ -201,21 +205,15 @@ describe('PrePackager', function () {
     });
 
     it('should align the graph if an import is added', function() {
-
       prePackager.graphHashes = generateGraphHashes();
+      var graphHashes = prePackager.graphHashes;
       
-      AllDependencies.update({
-        root: process.cwd(),
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
-        packageName: 'example-app',
-        pkg: { name: 'example-app', version: '1.0.0' },
-        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foo'
-      }, prePackager.graphHashes['example-app'].graph);
+      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].graph);
 
-      AllDependencies.synced('example-app', 'example-app/a.js');
-      AllDependencies.synced('example-app', 'example-app/b.js');
+      sync([
+        ['example-app', 'example-app/a.js'],
+        ['example-app', 'example-app/b.js']
+      ]);
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
         return ['example-app/', 'example-app/a.js', 'example-app/b.js', 'example-app/c.js'];
@@ -259,7 +257,8 @@ describe('PrePackager', function () {
 
     it('should perform an idempotent operation if there edges into a dropping edge', function() {
       prePackager.graphHashes = generateGraphHashes();
-      prePackager.graphHashes['foobiz'] = {
+      var graphHashes = prePackager.graphHashes;
+      graphHashes['foobiz'] = {
         graph: {
           'foobiz/foo': {
             imports: ['example-app/b']
@@ -269,29 +268,16 @@ describe('PrePackager', function () {
         hash: 'dbd7abe86d2bf760de14681cf990eced'
       };
       
-      AllDependencies.update({
-        root: process.cwd(),
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
-        packageName: 'example-app',
-        pkg: { name: 'example-app', version: '1.0.0' },
-        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foo'
-      }, prePackager.graphHashes['example-app'].graph);
+      updatePackages([
+        [{packageName: 'foobiz'}, graphHashes.foobiz.graph],
+        [{packageName: 'example-app'}, graphHashes['example-app'].graph]
+      ]);
 
-      AllDependencies.update({
-        root: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz',
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + path.sep + 'node_modules',
-        packageName: 'foobiz',
-        pkg: { name: 'foobiz', version: '1.0.0' },
-        relativePaths: ['foobiz/', 'foobiz/foo.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foobiz'
-      }, prePackager.graphHashes['foobiz'].graph);
-
-      AllDependencies.synced('example-app', 'example-app/a.js');
-      AllDependencies.synced('example-app', 'example-app/b.js');
-      AllDependencies.synced('foobiz', 'foobiz/foo.js');
+      sync([
+        ['example-app', 'example-app/a.js'],
+        ['example-app', 'example-app/b.js'],
+        ['foobiz', 'foobiz/foo.js']
+      ]);
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
         return ['example-app/', 'example-app/a.js'];
@@ -308,15 +294,7 @@ describe('PrePackager', function () {
               }
             }
           },
-          'foobiz': {
-            name: 'foobiz',
-            hash: 'dbd7abe86d2bf760de14681cf990eced',
-            graph: {
-              'foobiz/foo': {
-                imports: ['example-app/b']
-              }
-            }
-          }
+          'foobiz': prePackager.graphHashes.foobiz
         };
       };
 
@@ -328,9 +306,6 @@ describe('PrePackager', function () {
 
       var diffs = prePackager.diffGraph();
 
-      // Simulating the edge being placed back in by resolving foobiz/foo
-      AllDependencies.synced('example-app', 'example-app/b.js');
-
       expect(diffs).to.deep.eql(['example-app']);
       expect(AllDependencies.getSynced()).to.deep.eql({
         'example-app': ['example-app/a.js', 'example-app/b.js'],
@@ -338,12 +313,13 @@ describe('PrePackager', function () {
       });
     });
 
-    it('should drop transitive dependency if the entry node is dropped', function() {
+    it('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
       prePackager.graphHashes = generateGraphHashes();
-      prePackager.graphHashes['example-app'].graph['example-app/a'].imports.push('ember');
-      prePackager.graphHashes['example-app'].graph['example-app/b'].imports.push('foobiz/foo');
+      var graphHashes = prePackager.graphHashes;
+      graphHashes['example-app'].graph['example-app/a'].imports.push('ember');
+      graphHashes['example-app'].graph['example-app/b'].imports.push('foobiz/foo');
 
-      prePackager.graphHashes['foobiz'] = {
+      graphHashes['foobiz'] = {
         graph: {
           'foobiz/foo': {
             imports: ['bar/bar']
@@ -353,7 +329,7 @@ describe('PrePackager', function () {
         hash: 'dbd7abe86d2bf760de14681cf990eced'
       };
 
-      prePackager.graphHashes['bar'] = {
+      graphHashes['bar'] = {
         graph: {
           'bar/bar': {
             imports: ['ember']
@@ -363,9 +339,9 @@ describe('PrePackager', function () {
         hash: '9b7c669dd11a0333039ad97cb5a92b17'
       };
 
-      prePackager.graphHashes['ember'] = {
+      graphHashes['ember'] = {
         graph: {
-          'ember/ember': {
+          'ember': {
             imports: []
           }
         },
@@ -373,56 +349,23 @@ describe('PrePackager', function () {
         hash: 'daljk3325jdksl4ajk324923498hjadn32'
       };
 
-      AllDependencies.update({
-        root: process.cwd(),
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
-        packageName: 'example-app',
-        pkg: { name: 'example-app', version: '1.0.0' },
-        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foo'
-      }, prePackager.graphHashes['example-app'].graph);
+      updatePackages([
+        [{packageName: 'ember'}, graphHashes.ember.graph],
+        [{packageName: 'example-app'}, graphHashes['example-app'].graph],
+        
+        [{packageName: 'foobiz'}, graphHashes.foobiz.graph],
+        [{packageName: 'bar'}, graphHashes.bar.graph]
+      ]);
 
+      sync([
+        ['example-app', 'example-app/a.js'],
+        ['ember', 'ember.js'],
+        ['example-app', 'example-app/b.js'],
+        ['foobiz', 'foobiz/foo.js'],
+        ['bar', 'bar/bar.js']
+      ]);
 
-      AllDependencies.update({
-        root: process.cwd() + path.sep + 'node_modules' + path.sep + 'ember',
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules' + path.sep + 'ember' + path.sep + 'node_modules',
-        packageName: 'ember',
-        pkg: { name: 'ember', version: '1.0.0' },
-        relativePaths: ['ember/', 'ember/ember.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_ember'
-      }, prePackager.graphHashes['ember'].graph);
-
-      AllDependencies.update({
-        root: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz',
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + path.sep + 'node_modules',
-        packageName: 'foobiz',
-        pkg: { name: 'foobiz', version: '1.0.0' },
-        relativePaths: ['foobiz/', 'foobiz/foo.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foobiz'
-      }, prePackager.graphHashes['foobiz'].graph);
-
-      AllDependencies.update({
-        root: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + 'node_modules' + 'bar',
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules' + path.sep + 'foobiz' + path.sep + 'node_modules' + path.sep + 'bar' + 'node_modules',
-        packageName: 'bar',
-        pkg: { name: 'bar', version: '1.0.0' },
-        relativePaths: ['bar/', 'bar/bar.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_bar'
-      }, prePackager.graphHashes['bar'].graph);
-
-      AllDependencies.synced('example-app', 'example-app/a.js');
-      AllDependencies.synced('ember', 'ember/ember.js');
-      AllDependencies.synced('example-app', 'example-app/b.js');
-      AllDependencies.synced('foobiz', 'foobiz/foo.js');
-      AllDependencies.synced('bar', 'bar/bar.js');
-
-      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
-        return ['example-app/', 'example-app/a.js'];
-      };
+      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       prePackager.hashGraphs = function() {
         return {
@@ -438,45 +381,25 @@ describe('PrePackager', function () {
               }
             }
           },
-          'foobiz': {
-            graph: {
-              'foobiz/foo': {
-                imports: ['bar/bar']
-              }
-            },
-            name: 'foobiz',
-            hash: 'dbd7abe86d2bf760de14681cf990eced'
-          },
-          bar: {
-            graph: {
-              'bar/bar': {
-                imports: ['ember']
-              }
-            },
-            name: 'bar',
-            hash: '9b7c669dd11a0333039ad97cb5a92b17'
-          },
-          ember: {
-            graph: {
-              'ember/ember': {
-                imports: []
-              }
-            },
-            name: 'ember',
-            hash: 'daljk3325jdksl4ajk324923498hjadn32'
-          }
+          foobiz: graphHashes.foobiz,
+          bar: graphHashes.bar,
+          ember: graphHashes.ember
         };
       };
 
-      var diffs = prePackager.diffGraph();
+      expect(AllDependencies.getSynced()).to.deep.eql({
+        'example-app': ['example-app/a.js', 'example-app/b.js'],
+        ember: ['ember.js'],
+        foobiz: ['foobiz/foo.js'],
+        bar: ['bar/bar.js']
+      });
 
-      // Simulating the edge being placed back in by resolving foobiz/foo
-      AllDependencies.synced('example-app', 'example-app/b.js');
+      var diffs = prePackager.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
       expect(AllDependencies.getSynced()).to.deep.eql({
         'example-app': ['example-app/a.js', 'example-app/b.js'],
-        ember: ['ember/ember.js']
+        ember: ['ember.js']
       });
     });
   });
