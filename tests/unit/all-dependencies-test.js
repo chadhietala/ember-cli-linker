@@ -126,6 +126,12 @@ describe('all dependencies unit', function() {
 
     it('should update the graph if imports are removed', function() {
       AllDependencies.update(descriptor, dependencies);
+      AllDependencies.update({ packageName: 'ember' }, {
+        'ember': {
+          'imports': []
+        }
+      });
+
       simulateSync(descriptor);
       var modifiedDependencies = clone(dependencies);
       var desc = AllDependencies.for(descriptor.packageName).descriptor;
@@ -139,8 +145,14 @@ describe('all dependencies unit', function() {
       expect(AllDependencies._graph['example-app'].graph).to.deep.eql(modifiedDependencies);
     });
 
-    it('should update the graph if imports are removed', function() {
+    it('should update the imports if an import is removed', function() {
       AllDependencies.update(descriptor, dependencies);
+      AllDependencies.update({ packageName: 'ember' }, {
+        'ember': {
+          'imports': []
+        }
+      });
+
       simulateSync(descriptor);
       var modifiedDependencies = clone(dependencies);
       var desc = AllDependencies.for(descriptor.packageName).descriptor;
@@ -159,6 +171,11 @@ describe('all dependencies unit', function() {
 
     it('should not remove items from dedupedImports if something else has a pointer into that import', function() {
       AllDependencies.update(descriptor, dependencies);
+      AllDependencies.update({ packageName: 'ember' }, {
+        'ember': {
+          'imports': []
+        }
+      });
       simulateSync(descriptor);
       var modifiedDependencies = clone(dependencies);
       var desc = AllDependencies.for(descriptor.packageName).descriptor;
