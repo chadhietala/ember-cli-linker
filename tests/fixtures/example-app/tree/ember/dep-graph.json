@@ -1,6 +1,36 @@
 {
   "ember.js": {
-    "imports": ["exports", "npm:jquery", "lodash/lib/array/uniq"],
-    "exports": ["NOT IMPLEMENTED YET"]
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
+    "imports": [
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:jquery",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "$"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "lodash/lib/array/uniq",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "uniq"
+          }
+        ]
+      }
+    ]
   }
 }

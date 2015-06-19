@@ -1,6 +1,9 @@
 {
   "ember-resolver.js": {
-    "imports": [],
-    "exports": ["NOT IMPLEMENTED YET"]
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
+    "imports": []
   }
 }
