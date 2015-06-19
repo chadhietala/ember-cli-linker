@@ -16,15 +16,47 @@ function generateGraphHashes() {
       hash: '2ed8ffd474b4b640a931915d6b40f6f6',
       graph: {
         'example-app/a' : {
-          imports: ['example-app/b']
+          exports: {
+            exported: [],
+            specifiers: []
+          },
+          imports: [generateDefaultImport('example-app/b', 'b')]
         },
         'example-app/b': {
+          exports: {
+            exported: [],
+            specifiers: []
+          },
           imports: []
         }
       }
     }
   };
 }
+
+function generateDefaultImport(importName, local) {
+  return {
+    'imported': [
+      'default'
+    ],
+    'source': importName,
+    'specifiers': [
+      {
+        'imported': 'default',
+        'kind': 'named',
+        'local': local
+      }
+    ]
+  };
+}
+
+var exprts = {
+  exported: [],
+  specifiers: []
+};
+
+var b = generateDefaultImport('example-app/b', 'b');
+var c = generateDefaultImport('example-app/c', 'c');
 
 function sync(packages) {
   packages.forEach(function(pack) {
@@ -185,6 +217,10 @@ describe('PrePackager', function () {
             hash: 'c4dedac40c806eb428edc096c4bd6bfb',
             graph: {
               'example-app/a' : {
+                exports: {
+                  exported: [],
+                  specifiers: []
+                },
                 imports: []
               }
             }
@@ -200,7 +236,13 @@ describe('PrePackager', function () {
         'example-app/a': []
       });
       expect(AllDependencies.for('example-app').graph).to.deep.eql({
-        'example-app/a': { imports: [] }
+        'example-app/a': {
+          exports: {
+            exported: [],
+            specifiers: []
+          },
+          imports: []
+        }
       });
     });
 
@@ -226,12 +268,15 @@ describe('PrePackager', function () {
             hash: 'c4dedac40c806eb428edc096c4bd6bfb',
             graph: {
               'example-app/a' : {
-                imports: ['example-app/b']
+                exports:exprts,
+                imports: [b]
               },
               'example-app/b': {
-                imports: ['example-app/c']
+                exports:exprts,
+                imports: [c]
               },
               'example-app/c': {
+                exports: exprts,
                 imports: []
               }
             }
@@ -249,9 +294,9 @@ describe('PrePackager', function () {
       });
       
       expect(AllDependencies.for('example-app').graph).to.deep.eql({
-        'example-app/a': { imports: ['example-app/b'] },
-        'example-app/b': { imports: ['example-app/c'] },
-        'example-app/c': { imports: [] }
+        'example-app/a': { exports: exprts, imports: [b] },
+        'example-app/b': { exports: exprts, imports: [c] },
+        'example-app/c': { exports: exprts, imports: [] }
       });
     });
 
@@ -261,7 +306,8 @@ describe('PrePackager', function () {
       graphHashes['foobiz'] = {
         graph: {
           'foobiz/foo': {
-            imports: ['example-app/b']
+            exports: exprts,
+            imports: [b]
           }
         },
         name: 'foobiz',
@@ -290,6 +336,7 @@ describe('PrePackager', function () {
             hash: 'c4dedac40c806eb428edc096c4bd6bfb',
             graph: {
               'example-app/a' : {
+                exports: exprts,
                 imports: []
               }
             }
@@ -316,32 +363,37 @@ describe('PrePackager', function () {
     it('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
       prePackager.graphHashes = generateGraphHashes();
       var graphHashes = prePackager.graphHashes;
-      graphHashes['example-app'].graph['example-app/a'].imports.push('ember');
-      graphHashes['example-app'].graph['example-app/b'].imports.push('foobiz/foo');
+      var ember = generateDefaultImport('ember', 'ember');
+      var foo = generateDefaultImport('foobiz/foo', 'foo');
+      graphHashes['example-app'].graph['example-app/a'].imports.push(ember);
+      graphHashes['example-app'].graph['example-app/b'].imports.push(foo);
 
-      graphHashes['foobiz'] = {
+      graphHashes.foobiz = {
         graph: {
           'foobiz/foo': {
-            imports: ['bar/bar']
+            exports: exprts,
+            imports: [generateDefaultImport('bar/bar', 'bar')]
           }
         },
         name: 'foobiz',
         hash: 'dbd7abe86d2bf760de14681cf990eced'
       };
 
-      graphHashes['bar'] = {
+      graphHashes.bar = {
         graph: {
           'bar/bar': {
-            imports: ['ember']
+            exports: exprts,
+            imports: [ember]
           }
         },
         name: 'bar',
         hash: '9b7c669dd11a0333039ad97cb5a92b17'
       };
 
-      graphHashes['ember'] = {
+      graphHashes.ember = {
         graph: {
           'ember': {
+            exports: exprts,
             imports: []
           }
         },
@@ -352,7 +404,6 @@ describe('PrePackager', function () {
       updatePackages([
         [{packageName: 'ember'}, graphHashes.ember.graph],
         [{packageName: 'example-app'}, graphHashes['example-app'].graph],
-        
         [{packageName: 'foobiz'}, graphHashes.foobiz.graph],
         [{packageName: 'bar'}, graphHashes.bar.graph]
       ]);
@@ -374,9 +425,11 @@ describe('PrePackager', function () {
             hash: 'c4dedac40c806eb428edc096c4bd6bfb',
             graph: {
               'example-app/a' : {
-                imports: ['example-app/b', 'ember']
+                exports: exprts,
+                imports: [b, ember]
               },
               'example-app/b': {
+                exports: exprts,
                 imports: []
               }
             }
