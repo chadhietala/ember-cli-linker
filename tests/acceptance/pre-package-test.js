@@ -38,7 +38,7 @@ describe('pre-package acceptance', function () {
 
   it('should throw if no entries are passed', function () {
     return prePackager(find('tree')).catch(function(err) {
-      expect(err).to.deep.equal(new Error('You must pass an array of entries.'));
+      expect(err.message).to.eql('You must pass an array of entries.');
     });
   });
 
@@ -47,7 +47,7 @@ describe('pre-package acceptance', function () {
       entries: ['example-app'],
       treeDescriptors: generateTreeDescriptors(paths)
     }).then(function(results) {
-      expect(results.files.sort()).to.deep.equal([
+      expect(results.files.sort()).to.deep.eql([
         'browserified/ember-moment/ember-moment-legacy.js',
         'browserified/ember/ember-legacy.js',
         'ember-load-initializers.js',
