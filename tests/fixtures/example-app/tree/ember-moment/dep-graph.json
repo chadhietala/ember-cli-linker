@@ -1,67 +1,314 @@
 {
   "ember-moment/computed.js": {
-    "imports": [ 
-      "exports",
-      "ember-moment/computeds/moment",
-      "ember-moment/computeds/ago",
-      "ember-moment/computeds/duration"
-    ],
-    "exports": [ "NOT IMPLEMENTED YET" ]
-  },
-  "ember-moment/computeds/ago.js": {
+    "exports": {
+      "exported": ["moment", "ago", "duration"],
+      "specifiers": [
+        {
+          "kind": "local",
+          "local": "moment",
+          "exported": "moment"
+        },
+        {
+          "kind": "local",
+          "local": "ago",
+          "exported": "ago"
+        },
+        {
+          "kind": "local",
+          "local": "duration",
+          "exported": "duration"
+        }
+      ]
+    },
     "imports": [
-      "exports",
-      "ember",
-      "npm:moment",
-      "ember-moment/computeds/moment"
-    ],
-    "exports": [ "NOT IMPLEMENTED YET" ]
-  },
- "ember-moment/computeds/duration.js": {
-    "imports": [
-      "exports",
-      "ember",
-      "npm:moment",
-      "ember-moment/computeds/moment"
-    ],
-    "exports": [ "NOT IMPLEMENTED YET" ]
-  },
-  "ember-moment/computeds/moment.js": {
-    "imports": [
-      "exports",
-      "ember",
-      "npm:moment"
-    ],
-    "exports": [ "NOT IMPLEMENTED YET" ]
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember-moment/computeds/moment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "moment"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember-moment/computeds/ago",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ago"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember-moment/computeds/duration",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "duration"
+          }
+        ]
+      }
+    ]
   },
   "ember-moment/helpers/ago.js": {
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
     "imports": [
-      "exports",
-      "ember",
-      "npm:moment/lib/ago"
-    ],
-    "exports": [
-      "NOT IMPLEMENTED YET"
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:moment/lib/ago",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ago"
+          }
+        ]
+      }
     ]
   },
   "ember-moment/helpers/duration.js": {
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
     "imports": [
-      "exports",
-      "ember",
-      "npm:moment"
-    ],
-    "exports": [
-      "NOT IMPLEMENTED YET"
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:moment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "moment"
+          }
+        ]
+      }
     ]
   },
   "ember-moment/helpers/moment.js": {
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
     "imports": [
-      "exports",
-      "ember",
-      "npm:moment"
-    ],
-    "exports": [
-      "NOT IMPLEMENTED YET"
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:moment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "moment"
+          }
+        ]
+      }
+    ]
+  },
+  "ember-moment/computeds/ago.js": {
+    "exports": {
+      "exported": ["computedAgo"],
+      "specifiers": [{
+        "kind": "local",
+        "local":"computedAgo",
+        "exported": "default"
+      }]
+    },
+    "imports": [
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:moment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "moment"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "descriptorFor"
+        ],
+        "source": "ember-moment/computeds/moment",
+        "specifiers": [
+          {
+            "imported": "descriptorFor",
+            "kind": "named",
+            "local": "descriptorFor"
+          }
+        ]
+      }
+    ]
+  },
+  "ember-moment/computeds/duration.js": {
+    "exports": {
+      "exported": ["computedDuration"],
+      "specifiers": [{
+        "kind": "local",
+        "local":"computedDuration",
+        "exported": "default"
+      }]
+    },
+    "imports": [
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:moment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "moment"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "descriptorFor"
+        ],
+        "source": "ember-moment/computeds/moment",
+        "specifiers": [
+          {
+            "imported": "descriptorFor",
+            "kind": "named",
+            "local": "descriptorFor"
+          }
+        ]
+      }
+    ]
+  },
+  "ember-moment/computeds/moment.js": {
+    "exports": {
+      "exported": ["descriptorFor", "computedMoment"],
+      "specifiers": [
+        {
+          "kind": "local",
+          "local":"descriptorFor",
+          "exported": "descriptorFor"
+        },
+        {
+          "kind": "local",
+          "local":"computedMoment",
+          "exported": "default"
+        }
+      ]
+    },
+    "imports": [
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "npm:moment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "moment"
+          }
+        ]
+      }
     ]
   }
 }
