@@ -32,6 +32,34 @@ describe('pre-package acceptance', function () {
   });
   var paths = walkSync('tests/fixtures/example-app/tree');
 
+  var treeMeta = [{
+      name: 'example-app',
+      type: 'app'
+    },
+    {
+      name: 'tests',
+      altName: 'example-app/tests',
+      parent: 'example-app',
+      type: 'tests'
+    },
+    {
+      name: 'ember',
+      type: 'addon'
+    },
+    {
+      name: 'ember-load-initializers',
+      type: 'addon'
+    },
+    {
+      name: 'ember-moment',
+      type: 'addon'
+    },
+    {
+      name: 'ember-resolver',
+      type: 'addon'
+  }];
+
+
   afterEach(function () {
     return cleanupBuilders();
   });
@@ -43,9 +71,9 @@ describe('pre-package acceptance', function () {
   });
 
   it('should only include files in the dependency graph', function () {
-    return prePackager(generateTrees(paths), {
-      entries: ['example-app'],
-      treeDescriptors: generateTreeDescriptors(paths)
+    return prePackager(generateTrees(treeMeta), {
+      entries: ['example-app', 'example-app/tests'],
+      treeDescriptors: generateTreeDescriptors(treeMeta)
     }).then(function(results) {
       expect(results.files.sort()).to.deep.eql([
         'browserified/ember-moment/ember-moment-legacy.js',
@@ -124,9 +152,8 @@ describe('pre-package acceptance', function () {
   });
 
   it.skip('should transpile regular es6 modules', function() {
-    console.log(paths);
-    return prePackager(generateTrees(paths), {
-      entries: ['example-app'],
+    return prePackager(generateTrees(treeMeta), {
+      entries: ['example-app', 'example-app/tests'],
       treeDescriptors: generateTreeDescriptors(paths)
     }).then(function(results) {
       var babelified = fs.readFileSync(results.directory + '/lodash/lib/array/uniq.js', 'utf8');

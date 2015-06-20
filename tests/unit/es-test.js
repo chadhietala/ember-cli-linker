@@ -12,6 +12,33 @@ var expect = require('chai').expect;
 describe('es resolver', function() {
   var paths = walkSync('tests/fixtures/example-app/tree');
 
+  var treeMeta = [{
+      name: 'example-app',
+      type: 'app'
+    },
+    {
+      name: 'tests',
+      altName: 'example-app/tests',
+      parent: 'example-app',
+      type: 'tests'
+    },
+    {
+      name: 'ember',
+      type: 'addon'
+    },
+    {
+      name: 'ember-load-initializers',
+      type: 'addon'
+    },
+    {
+      name: 'ember-moment',
+      type: 'addon'
+    },
+    {
+      name: 'ember-resolver',
+      type: 'addon'
+  }];
+
   beforeEach(function() {
     sinon.spy(resolver, 'syncForwardDependency');
   });
@@ -31,7 +58,7 @@ describe('es resolver', function() {
     var tempDir = temp.makeOrRemake({}, 'es-test');
 
     resolver.resolve(tempDir, importInfo, {
-      treeDescriptors: generateTreeDescriptors(paths)
+      treeDescriptors: generateTreeDescriptors(treeMeta)
     });
 
     expect(resolver.syncForwardDependency.callCount).to.eql(3);
@@ -51,7 +78,7 @@ describe('es resolver', function() {
     var tempDir = temp.makeOrRemake({}, 'es-test');
 
     resolver.resolve(tempDir, importInfo, {
-      treeDescriptors: generateTreeDescriptors(paths)
+      treeDescriptors: generateTreeDescriptors(treeMeta)
     });
 
     expect(resolver.syncForwardDependency.callCount).to.eql(4);
@@ -87,7 +114,7 @@ describe('es resolver', function() {
       });
 
       var tempDir = temp.makeOrRemake({}, 'es-test');
-      var treeDescriptors = generateTreeDescriptors(paths);
+      var treeDescriptors = generateTreeDescriptors(treeMeta);
 
       
       var willThrow = function() {

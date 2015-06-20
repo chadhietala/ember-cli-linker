@@ -1,0 +1,23 @@
+{
+  "example-app/tests/unit/components/foo-bar-test.js": {
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
+    "imports": [
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "ember"
+          }
+        ]
+      }
+    ]
+  }
+}

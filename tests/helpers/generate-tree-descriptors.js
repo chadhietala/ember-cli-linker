@@ -1,19 +1,25 @@
 'use strict';
 
-var gatherTreeNames = require('./gather-tree-names');
 var path = require('path');
 
-function generateTreeDescriptors(paths) {
-  var treeNames = gatherTreeNames(paths);
+function generateTreeDescriptors(metas) {
 
   var descriptors = {};
 
-  treeNames.forEach(function(name) {
+  metas.forEach(function(treeMeta) {
     var pkg;
     var root;
+    var type = treeMeta.type;
+    var name;
     var nodeModulesPath;
 
-    if (name !== 'example-app') {
+    if (treeMeta.altName) {
+      name = treeMeta.altName
+    } else {
+      name = treeMeta.name;
+    }
+
+    if (type === 'addon') {
       root = path.join(process.cwd(), 'tests/fixtures/example-app/node_modules/', name); 
     } else {
       root = path.join(process.cwd(), 'tests/fixtures/example-app');
@@ -22,12 +28,13 @@ function generateTreeDescriptors(paths) {
     nodeModulesPath = path.join(root, 'node_modules');
     pkg = require(path.join(root, 'package.json'));
 
-    descriptors[pkg.name] = {
-      packageName: pkg.name,
-      pkg: pkg,
+    descriptors[name] = {
+      packageName: name,
       root: root,
-      nodeModulesPath: nodeModulesPath
+      nodeModulesPath: nodeModulesPath,
+      pkg: pkg
     };
+
   });
 
   return descriptors;
