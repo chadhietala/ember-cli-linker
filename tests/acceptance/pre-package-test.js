@@ -97,11 +97,11 @@ describe('pre-package acceptance', function () {
         'example-app/tests/dep-graph.json',
         'example-app/tests/unit/components/foo-bar-test.js',
         'lodash/lib/array/flatten.js',
-        'lodash/lib/array/flatten.map',
+        'lodash/lib/array/flatten.js.map',
         'lodash/lib/array/uniq.js',
-        'lodash/lib/array/uniq.map',
+        'lodash/lib/array/uniq.js.map',
         'lodash/lib/compat.js',
-        'lodash/lib/compat.map'
+        'lodash/lib/compat.js.map'
       ]);
     });
   });
