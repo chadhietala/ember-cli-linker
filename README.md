@@ -6,71 +6,73 @@ The __Pre-Packager__ is the soon to be resolution phase for the Ember CLI build 
 
 ## High Level Design
 
-The input to the pre-packager is an array of trees that looks like the following:
+The input to the pre-packager is an array of trees. The build step prior to the pre-packager simply discovers the app and addons in your project transpiles them to amd. As a result of this it should leave a `dep-graph.json` per package in the output tree.
 
-```
-input-tree/
-├── ember
-│   ├── dep-graph.json
-│   └── ember.js
-├── ember-load-initializers
-│   ├── dep-graph.json
-│   └── ember-load-initializers.js
-├── ember-moment
-│   ├── computed.js
-│   ├── computeds
-│   │   ├── ago.js
-│   │   ├── duration.js
-│   │   └── moment.js
-│   ├── dep-graph.json
-│   └── helpers
-│       ├── ago.js
-│       ├── duration.js
-│       └── moment.js
-├── ember-resolver
-│   ├── dep-graph.json
-│   └── ember-resolver.js
-└── example-app
-    ├── app.js
-    ├── config
-    │   └── environment.js
-    ├── dep-graph.json
-    ├── initializers
-    │   └── ember-moment.js
-    └── router.js
-```
-
-The build step prior to the pre-packager simply discovers the app and addons in your project transpiles them to amd. As a result of this it should leave a `dep-graph.json` per package in the output tree.
-
-Instead of re-parsing all of the files in the tree to construct a dependency graph we take advantage of the fact that esperanto can give us a map of all of a packages depenendencies.  This map looks something like the following:
+Instead of re-parsing all of the files in the tree to construct a dependency graph we take advantage of the fact that babel can give us a map of all of a packages dependencies.  This map looks something like the following:
 
 ```js
 {
   "example-app/app.js": {
+    "exports": {
+      "exported": [],
+      "specifiers": []
+    },
     "imports": [
-      "exports",
-      "ember",
-      "ember-resolver",
-      "ember-load-initializers",
-      "example-app/config/environment"
-    ]
-  },
-  "example-app/initializers/ember-moment.js": {
-    "imports": [
-      "exports",
-      "ember-moment/helpers/moment",
-      "ember-moment/helpers/ago",
-      "ember-moment/helpers/duration",
-      "ember"
-    ]
-  },
-  "example-app/router.js": {
-    "imports": [
-      "exports",
-      "ember",
-      "example-app/config/environment"
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "Ember"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember-resolver",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "Resolver"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "ember-load-initializers",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "loadInitializers"
+          }
+        ]
+      },
+      {
+        "imported": [
+          "default"
+        ],
+        "source": "example-app/config/environment",
+        "specifiers": [
+          {
+            "imported": "default",
+            "kind": "named",
+            "local": "config"
+          }
+        ]
+      }
     ]
   }
+  ...
 }
 ```
 
@@ -85,11 +87,17 @@ The algorithm for resolving and syncing files into the output tree is as follows
 3. Read in the import's corresponding dep-graph.json for the import in the interation grabbing it's imports (transitives).
 4. Back to 2 with the imports (transitives) and continue till all of the entries imports have been synced.
 
+### Resolution of ES2015 Modules
+
+With addons, we know all of the addon namespaces in which modules could come from. For example `import ago from 'ember-moment/helpers/ago';` is going to come from the `ember-moment` addon. This allows us to make a clear delineation between if an import is an addon or not.  In the case that the import is not an addon, we take the modules namespace and use the module resolution algorithm to see if a package exists for the namespace.  If there is we then further check for the "jsnext:main" convention in it's package.json.  If both of those cases are true we know we are dealing with an ES6 module.
+
+Using Babel we compile the file. At the end of each compilation we are given the same import/export data structure and we then use that to recurse to resolve the graph.
+
 ### Resolution of legacy npm modules
 
-In the event the application is using "legacy" JavaScript modules a la CJS, they should be prefixed with `npm:` when they are used in the addon or applcation.
+In the event the application is using "legacy" JavaScript modules a la CJS, they should be prefixed with `npm:` when they are used in the addon or application.
 
-The way legacy modules are resolved is different. Since we cannot construct a dep-graph.json ahead of time, we rely on browserify's ability to handle this for us. Since there is probablity that addons or apps may pull in the same legacy module we wait till the resolution of addons is complete. This allows for the stub amd files to be aggregated and deduped.
+The way legacy modules are resolved is different. Since we cannot construct a dep-graph.json ahead of time, we rely on browserify's ability to handle this for us. Since there is probability that addons or apps may pull in the same legacy module we wait till the resolution of addons is complete. This allows for the stub amd files to be aggregated and deduped.
 
 The cache key here is layered from least expensive to most expensive:
 
