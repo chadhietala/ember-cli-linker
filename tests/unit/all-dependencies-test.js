@@ -27,7 +27,7 @@ function stripFileExtensions(graph) {
 
   Object.keys(graphClone).forEach(function(file) {
     var fileName = file.replace('.js', '');
-    _graph[fileName] = graphClone[file]; 
+    _graph[fileName] = graphClone[file];
   });
 
   return _graph;
@@ -342,33 +342,33 @@ describe('all dependencies unit', function() {
     it('should add an item to the synced cache if it does not exist', function() {
       AllDependencies.synced('ember', 'ember/get');
       expect(AllDependencies._synced['ember']).to.deep.eql(['ember/get']);
-    }); 
+    });
 
     it('should add an import to an existing package', function() {
       AllDependencies.synced('ember', 'ember/get');
       AllDependencies.synced('ember', 'ember/set');
       expect(AllDependencies._synced['ember']).to.deep.eql(['ember/get', 'ember/set']);
-    }); 
+    });
   });
 
   describe('getSynced', function() {
     it('should return the entire sync object when called with no arguments', function() {
       AllDependencies.synced('ember', 'ember/get');
       expect(AllDependencies.getSynced()).to.deep.eql({ ember: ['ember/get'] });
-    }); 
+    });
 
     it('should return just the imports synced for a package', function() {
       AllDependencies.synced('ember', 'ember/get');
       expect(AllDependencies.getSynced('ember')).to.deep.eql(['ember/get']);
-    }); 
+    });
   });
 
   describe('isSynced', function() {
     it('should return a boolean if the item has been synced or not', function() {
-      AllDependencies.synced('ember', 'ember/get');
+      AllDependencies.synced('ember', 'ember/get.js');
       expect(AllDependencies.isSynced('ember', 'ember/get')).to.eql(true);
       expect(AllDependencies.isSynced('ember', 'ember/set')).to.eql(false);
-    }); 
+    });
   });
 
   describe('add', function() {
@@ -415,7 +415,7 @@ describe('all dependencies unit', function() {
       expect(pack.imports).to.deep.eql({
         'bazing/a': [ 'bazing/b' ]
       });
-    }); 
+    });
 
     it('should add an item to the graph if it already exists', function() {
       var desc = {
@@ -471,6 +471,6 @@ describe('all dependencies unit', function() {
         'bazing/b': [ ]
       });
       expect(pack.dedupedImports).to.deep.eql([ 'bazing/b' ]);
-    }); 
+    });
   });
 });

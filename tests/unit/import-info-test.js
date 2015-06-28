@@ -1,5 +1,7 @@
 'use strict';
-var getImportInfo = require('../../lib/utils/get-import-info');
+var importInfo = require('../../lib/utils/import-info');
+var getImportInfo = importInfo.getImportInfo;
+var getPackageName = importInfo.getPackageName;
 var expect = require('chai').expect;
 var Import = require('../../lib/models/import');
 
@@ -27,7 +29,7 @@ describe('getImportInfo', function() {
   it('should return an Import', function() {
     expect(getImportInfo(descriptors, 'dummy', 'dummy/app', 'dummy') instanceof Import).to.eql(true);
   });
-    
+
   it('should conform to the Import interface', function() {
     var importInfo = getImportInfo(descriptors, 'dummy', 'dummy/app', 'dummy');
     var props = Object.keys(importInfo);
@@ -59,6 +61,18 @@ describe('getImportInfo', function() {
 
     expect(willThrow).to.throw('Cannot generate import information for hype-bars. Please make sure hype-bars is a dependency of dummy.');
   });
+});
 
+describe('getPackageName', function() {
+  it('should return a scoped package name', function() {
+    expect(getPackageName('@linkedin/foo/bar')).to.eql('@linkedin/foo');
+  });
 
+  it('should the package name', function() {
+    expect(getPackageName('foo/bar')).to.eql('foo');
+  });
+
+  it('tests should fall back to their importer', function() {
+    expect(getPackageName('foo/tests/bar-test', 'foo/tests')).to.eql('foo/tests');
+  });
 });
