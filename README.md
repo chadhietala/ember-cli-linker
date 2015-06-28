@@ -1,12 +1,12 @@
-# Ember CLI Pre-Packager
+# Ember CLI Linker
 
-[![Build Status][travis-badge]][travis-badge-url] [![Coverage Status](https://coveralls.io/repos/chadhietala/ember-cli-pre-packager/badge.svg?branch=coveralls)](https://coveralls.io/r/chadhietala/ember-cli-pre-packager?branch=coveralls)
+[![Build Status][travis-badge]][travis-badge-url] [![Coverage Status](https://coveralls.io/repos/chadhietala/ember-cli-linker/badge.svg?branch=coveralls)](https://coveralls.io/r/chadhietala/ember-cli-linker?branch=coveralls)
 
-The __Pre-Packager__ is the soon to be resolution phase for the Ember CLI build process. It's primary concern is resolving dependencies in a project and outputing a tree that represents the dependency graph.  This tree would then be passed to the __Packager__ that allows for declarative concatenation strategies. The resolution occurs via __dependency resolvers__. Out of the box the pre-packger has 3 depedency resolvers, __addon__, __npm__, and __esnext__, however the resolvers are dynamically looked up which creates a nice charateristic of modularity for resolving different types.
+The __Linker__ is the soon to be resolution phase for the Ember CLI build process. It's primary concern is resolving dependencies in a project and outputing a tree that represents the dependency graph.  This tree would then be passed to the __Packager__ that allows for declarative concatenation strategies. The resolution occurs via __dependency resolvers__. Out of the box the pre-packger has 3 dependency resolvers, __addon__, __npm__, and __esnext__, however the resolvers are dynamically looked up which creates a nice charateristic of modularity for resolving different types.
 
 ## High Level Design
 
-The input to the pre-packager is an array of trees. The build step prior to the pre-packager simply discovers the app and addons in your project transpiles them to amd. As a result of this it should leave a `dep-graph.json` per package in the output tree.
+The input to the linker is an array of trees. The build step prior to the linker simply discovers the app and addons in your project transpiles them to amd. As a result of this it should leave a `dep-graph.json` per package in the output tree.
 
 Instead of re-parsing all of the files in the tree to construct a dependency graph we take advantage of the fact that babel can give us a map of all of a packages dependencies.  This map looks something like the following:
 
@@ -107,5 +107,5 @@ The cache key here is layered from least expensive to most expensive:
 
 This strategy allows for imports from the same module to be added/removed/swapped and the built module to retain the parity of the graph.
 
-[travis-badge]: https://travis-ci.org/chadhietala/ember-cli-pre-packager.svg?branch=master
-[travis-badge-url]: https://travis-ci.org/chadhietala/ember-cli-pre-packager
+[travis-badge]: https://travis-ci.org/chadhietala/ember-cli-linker.svg?branch=master
+[travis-badge-url]: https://travis-ci.org/chadhietala/ember-cli-linker

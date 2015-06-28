@@ -1,6 +1,6 @@
 'use strict';
 
-var PrePackager     = require('../../lib/pre-packager');
+var Linker     = require('../../lib/linker');
 var helpers         = require('broccoli-test-helpers');
 var stew            = require('broccoli-stew');
 var path            = require('path');
@@ -18,10 +18,10 @@ function clone(a) {
    return JSON.parse(JSON.stringify(a));
 }
 
-describe('pre-package acceptance', function () {
+describe('linker acceptance', function () {
   var fixturePath = path.resolve('./tests/fixtures/example-app');
   var testSubject = function() {
-      return new PrePackager(arguments[0], arguments[1]);
+      return new Linker(arguments[0], arguments[1]);
   };
   var prePackager = makeTestHelper({
     fixturePath: fixturePath,
@@ -161,7 +161,7 @@ describe('pre-package acceptance', function () {
       expect(babelified.indexOf('...args')).to.be.lt(0);
     });
   });
-  
+
   // TODO
   // Spying on functions with broccoli-test-helpers is no bueno
   describe.skip('node_modules rebuild', function() {
