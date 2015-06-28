@@ -2,7 +2,7 @@
   "name": "ember-cli-pre-packager",
   "version": "0.0.0",
   "description": "Provides pre-packaging for Ember CLI applcations",
-  "main": "lib/pre-packager.js",
+  "main": "lib/linker.js",
   "scripts": {
     "test:debug": "node debug tests/runner",
     "test:watch": "mocha -R spec -w tests/**/*-test.js",

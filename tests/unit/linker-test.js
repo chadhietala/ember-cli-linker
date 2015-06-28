@@ -1,6 +1,6 @@
 'use strict';
 
-var PrePackager = require('../../lib/pre-packager');
+var Linker = require('../../lib/linker');
 var expect = require('chai').expect;
 var walkSync = require('walk-sync');
 var generateTrees = require('../helpers/generate-trees');
@@ -70,14 +70,14 @@ function updatePackages(packages) {
   });
 }
 
-describe('PrePackager', function () {
-  var prePackager;
+describe('Linker', function () {
+  var linker;
   var paths = walkSync('tests/fixtures/example-app/tree');
 
   beforeEach(function() {
     AllDependencies._synced = {};
     AllDependencies._graph = {};
-    prePackager = new PrePackager(generateTrees(paths), {
+    linker = new Linker(generateTrees(paths), {
       entries: ['example-app'],
       treeDescriptors: generateTreeDescriptors(paths)
     });
@@ -85,25 +85,25 @@ describe('PrePackager', function () {
 
   it('should throw if no entires are passed', function() {
     expect(function() {
-      return new PrePackager();
+      return new Linker();
     }).to.throw(/You must pass an array of entries./);
   });
 
   it('should throw if no tree descriptors are passed', function() {
     expect(function() {
-      return new PrePackager('.', { entries: ['example-app'] });
+      return new Linker('.', { entries: ['example-app'] });
     }).to.throw(/You must pass TreeDescriptors that describe the trees in the project./);
   });
 
   it('should setup graphHashes if they do not exist', function() {
-    prePackager.hashGraphs = function() {
+    linker.hashGraphs = function() {
       return generateGraphHashes();
     };
 
-    var diffs = prePackager.diffGraph();
+    var diffs = linker.diffGraph();
 
     expect(diffs).to.deep.eql([]);
-    expect(prePackager.graphHashes).to.deep.eql(generateGraphHashes());
+    expect(linker.graphHashes).to.deep.eql(generateGraphHashes());
   });
 
   describe('cacheImport', function() {
@@ -122,21 +122,21 @@ describe('PrePackager', function () {
         }
       });
 
-      prePackager.cacheImport(new Import({
+      linker.cacheImport(new Import({
         name: 'a',
         packageName: 'sample-package',
         type: 'npm',
         importer: 'example-app'
       }), 'example-app');
 
-      expect(prePackager.importCache).to.deep.eql({
+      expect(linker.importCache).to.deep.eql({
         npm: {
           'sample-package': {
             imports: [new Import({importer: 'example-app', name: 'a', packageName: 'sample-package', type: 'npm'})],
             parent: AllDependencies.for('example-app')
           }
         }
-      });      
+      });
     });
 
     it('should update the existing import cache with a new import', function() {
@@ -154,21 +154,21 @@ describe('PrePackager', function () {
         }
       });
 
-      prePackager.cacheImport(new Import({
+      linker.cacheImport(new Import({
         name: 'a',
         packageName: 'sample-package',
         type: 'npm',
         importer: 'example-app'
       }), 'example-app');
 
-      prePackager.cacheImport(new Import({
+      linker.cacheImport(new Import({
         name: 'b',
         packageName: 'sample-package',
         type: 'npm',
         importer: 'example-app'
       }), 'example-app');
 
-      expect(prePackager.importCache).to.deep.eql({
+      expect(linker.importCache).to.deep.eql({
         npm: {
           'sample-package': {
             imports: [
@@ -184,20 +184,20 @@ describe('PrePackager', function () {
 
   describe('diffGraph', function() {
     it('should perform an idempotent diff if the graphHashes exist and hashes are the same', function() {
-      prePackager.graphHashes = generateGraphHashes();
+      linker.graphHashes = generateGraphHashes();
 
-      prePackager.hashGraphs = function() {
+      linker.hashGraphs = function() {
         return generateGraphHashes();
       };
 
-      var diffs = prePackager.diffGraph();
+      var diffs = linker.diffGraph();
       expect(diffs).to.deep.eql([]);
     });
 
     it('should align the graph if an import is removed', function() {
 
-      prePackager.graphHashes = generateGraphHashes();
-      var graphHashes = prePackager.graphHashes;
+      linker.graphHashes = generateGraphHashes();
+      var graphHashes = linker.graphHashes;
 
       AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].graph);
 
@@ -210,7 +210,7 @@ describe('PrePackager', function () {
         return ['example-app/', 'example-app/a.js'];
       };
 
-      prePackager.hashGraphs = function() {
+      linker.hashGraphs = function() {
         return {
           'example-app': {
             name: 'example-app',
@@ -228,7 +228,7 @@ describe('PrePackager', function () {
         };
       };
 
-      var diffs = prePackager.diffGraph();
+      var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
       expect(AllDependencies.getSynced('example-app')).to.deep.eql(['example-app/a.js']);
@@ -247,9 +247,9 @@ describe('PrePackager', function () {
     });
 
     it('should align the graph if an import is added', function() {
-      prePackager.graphHashes = generateGraphHashes();
-      var graphHashes = prePackager.graphHashes;
-      
+      linker.graphHashes = generateGraphHashes();
+      var graphHashes = linker.graphHashes;
+
       AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].graph);
 
       sync([
@@ -261,7 +261,7 @@ describe('PrePackager', function () {
         return ['example-app/', 'example-app/a.js', 'example-app/b.js', 'example-app/c.js'];
       };
 
-      prePackager.hashGraphs = function() {
+      linker.hashGraphs = function() {
         return {
           'example-app': {
             name: 'example-app',
@@ -284,7 +284,7 @@ describe('PrePackager', function () {
         };
       };
 
-      var diffs = prePackager.diffGraph();
+      var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
       expect(AllDependencies.for('example-app').imports).to.deep.eql({
@@ -292,7 +292,7 @@ describe('PrePackager', function () {
         'example-app/b': ['example-app/c'],
         'example-app/c': []
       });
-      
+
       expect(AllDependencies.for('example-app').graph).to.deep.eql({
         'example-app/a': { exports: exprts, imports: [b] },
         'example-app/b': { exports: exprts, imports: [c] },
@@ -301,8 +301,8 @@ describe('PrePackager', function () {
     });
 
     it('should perform an idempotent operation if there edges into a dropping edge', function() {
-      prePackager.graphHashes = generateGraphHashes();
-      var graphHashes = prePackager.graphHashes;
+      linker.graphHashes = generateGraphHashes();
+      var graphHashes = linker.graphHashes;
       graphHashes['foobiz'] = {
         graph: {
           'foobiz/foo': {
@@ -313,7 +313,7 @@ describe('PrePackager', function () {
         name: 'foobiz',
         hash: 'dbd7abe86d2bf760de14681cf990eced'
       };
-      
+
       updatePackages([
         [{packageName: 'foobiz'}, graphHashes.foobiz.graph],
         [{packageName: 'example-app'}, graphHashes['example-app'].graph]
@@ -329,7 +329,7 @@ describe('PrePackager', function () {
         return ['example-app/', 'example-app/a.js'];
       };
 
-      prePackager.hashGraphs = function() {
+      linker.hashGraphs = function() {
         return {
           'example-app': {
             name: 'example-app',
@@ -341,17 +341,17 @@ describe('PrePackager', function () {
               }
             }
           },
-          'foobiz': prePackager.graphHashes.foobiz
+          'foobiz': linker.graphHashes.foobiz
         };
       };
 
-      // Asserting example-app/b.js is here from the revious resolve 
+      // Asserting example-app/b.js is here from the revious resolve
       expect(AllDependencies.getSynced()).to.deep.eql({
         'example-app': ['example-app/a.js', 'example-app/b.js'],
         foobiz: ['foobiz/foo.js']
       });
 
-      var diffs = prePackager.diffGraph();
+      var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
       expect(AllDependencies.getSynced()).to.deep.eql({
@@ -361,8 +361,8 @@ describe('PrePackager', function () {
     });
 
     it('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
-      prePackager.graphHashes = generateGraphHashes();
-      var graphHashes = prePackager.graphHashes;
+      linker.graphHashes = generateGraphHashes();
+      var graphHashes = linker.graphHashes;
       var ember = generateDefaultImport('ember', 'ember');
       var foo = generateDefaultImport('foobiz/foo', 'foo');
       graphHashes['example-app'].graph['example-app/a'].imports.push(ember);
@@ -418,7 +418,7 @@ describe('PrePackager', function () {
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
-      prePackager.hashGraphs = function() {
+      linker.hashGraphs = function() {
         return {
           'example-app': {
             name: 'example-app',
@@ -447,7 +447,7 @@ describe('PrePackager', function () {
         bar: ['bar/bar.js']
       });
 
-      var diffs = prePackager.diffGraph();
+      var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql(['example-app']);
       expect(AllDependencies.getSynced()).to.deep.eql({
