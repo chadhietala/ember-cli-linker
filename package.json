@@ -1,5 +1,5 @@
 {
-  "name": "ember-cli-pre-packager",
+  "name": "ember-cli-linker",
   "version": "0.0.0",
   "description": "Provides pre-packaging for Ember CLI applcations",
   "main": "lib/linker.js",
