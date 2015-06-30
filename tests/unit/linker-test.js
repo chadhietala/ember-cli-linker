@@ -95,17 +95,6 @@ describe('Linker', function () {
     }).to.throw(/You must pass TreeDescriptors that describe the trees in the project./);
   });
 
-  it('should setup graphHashes if they do not exist', function() {
-    linker.hashGraphs = function() {
-      return generateGraphHashes();
-    };
-
-    var diffs = linker.diffGraph();
-
-    expect(diffs).to.deep.eql([]);
-    expect(linker.graphHashes).to.deep.eql(generateGraphHashes());
-  });
-
   describe('cacheImport', function() {
     it('should cache an import by its type', function() {
       AllDependencies.update({
