@@ -4,13 +4,12 @@ var resolver = require('../../lib/resolvers/es');
 var sinon = require('sinon');
 var fs = require('fs-extra');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
-var walkSync = require('walk-sync');
 var temp = require('quick-temp');
 var Import = require('../../lib/models/import');
 var expect = require('chai').expect;
+var AllDependencies = require('../../lib/all-dependencies');
 
 describe('es resolver', function() {
-  var paths = walkSync('tests/fixtures/example-app/tree');
 
   var treeMeta = [{
       name: 'example-app',
@@ -44,6 +43,7 @@ describe('es resolver', function() {
   });
 
   afterEach(function() {
+    AllDependencies._synced = {};
     resolver.syncForwardDependency.restore();
   });
 
@@ -116,7 +116,7 @@ describe('es resolver', function() {
       var tempDir = temp.makeOrRemake({}, 'es-test');
       var treeDescriptors = generateTreeDescriptors(treeMeta);
 
-      
+
       var willThrow = function() {
         return resolver.resolve(tempDir, importInfo, {
           treeDescriptors: treeDescriptors
