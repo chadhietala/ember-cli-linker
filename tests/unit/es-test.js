@@ -44,6 +44,7 @@ describe('es resolver', function() {
 
   afterEach(function() {
     AllDependencies._synced = {};
+    AllDependencies._graph = {};
     resolver.syncForwardDependency.restore();
   });
 
