@@ -330,11 +330,9 @@ describe('all dependencies unit', function() {
       expect(imports).to.deep.equal(['npm:jquery', 'ember']);
     });
 
-    it('should return throw if the file or package cannot be found', function() {
+    it('should return null if the file or package cannot be found', function() {
       AllDependencies.update(descriptor, dependencies);
-      expect(function() {
-        return AllDependencies.for('dummy/router', 'dummy');
-      }).to.throw(/dummy\/router cannot be found./);
+      expect(AllDependencies.for('dummy/router', 'dummy')).to.eql(null);
     });
   });
 
