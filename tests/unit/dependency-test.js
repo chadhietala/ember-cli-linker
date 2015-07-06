@@ -13,11 +13,11 @@ describe('Package', function() {
   });
 
   it('should add an import the graph', function() {
-    this.pack.addToGraph('example-app/app', {
+    this.pack.addToDenormalizedGraph('example-app/app', {
       imports: ['exports', 'ember'],
       exports: ['default']
     });
-    expect(this.pack.graph).to.deep.eql({
+    expect(this.pack.denormalizedGraph).to.deep.eql({
       'example-app/app': {
         imports: ['exports', 'ember'],
         exports: ['default']

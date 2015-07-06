@@ -144,7 +144,7 @@ describe('Package', function () {
     });
   });
 
-  describe('addToGraph',  function() {
+  describe('addToDenormalizedGraph',  function() {
     it('it should add to an existing graph', function() {
       var pack = new Package({
         graph: {
@@ -155,9 +155,9 @@ describe('Package', function () {
         }
       });
 
-      pack.addToGraph('a', {imports: ['b'], exports: []});
+      pack.addToDenormalizedGraph('a', {imports: ['b'], exports: []});
 
-      expect(pack.graph).to.deep.eql({
+      expect(pack.denormalizedGraph).to.deep.eql({
         a: {
           imports: ['b'],
           exports: []
@@ -244,7 +244,7 @@ describe('Package', function () {
         b: ['c']
       });
 
-      expect(pack.graph).to.deep.eql(graph);
+      expect(pack.denormalizedGraph).to.deep.eql(graph);
       expect(pack.dedupedImports).to.deep.eql(['b', 'c']);
     });
   });

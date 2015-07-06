@@ -405,7 +405,7 @@ describe('all dependencies unit', function() {
       var pack = AllDependencies.for('bazing');
 
       modelEquals(pack.descriptor, new Descriptor(desc));
-      expect(pack.graph).to.deep.eql({
+      expect(pack.denormalizedGraph).to.deep.eql({
         'bazing/a': graph
       });
 
