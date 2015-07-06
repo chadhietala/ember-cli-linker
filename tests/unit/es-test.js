@@ -58,14 +58,14 @@ describe('es resolver', function() {
 
     var tempDir = temp.makeOrRemake({}, 'es-test');
 
-    resolver.resolve(tempDir, importInfo, {
+    return resolver.resolve(tempDir, importInfo, {
       treeDescriptors: generateTreeDescriptors(treeMeta)
+    }).then(function() {
+      expect(resolver.syncForwardDependency.callCount).to.eql(3);
+      expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/array/uniq.js');
+      expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/flatten.js');
+      expect(resolver.syncForwardDependency.thirdCall.args[4]).to.eql('lodash/lib/compat.js');
     });
-
-    expect(resolver.syncForwardDependency.callCount).to.eql(3);
-    expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/array/uniq.js');
-    expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/flatten.js');
-    expect(resolver.syncForwardDependency.thirdCall.args[4]).to.eql('lodash/lib/compat.js');
   });
 
   it('should sync forward main file it\'s imports', function() {
@@ -78,15 +78,15 @@ describe('es resolver', function() {
 
     var tempDir = temp.makeOrRemake({}, 'es-test');
 
-    resolver.resolve(tempDir, importInfo, {
+    return resolver.resolve(tempDir, importInfo, {
       treeDescriptors: generateTreeDescriptors(treeMeta)
+    }).then(function() {
+      expect(resolver.syncForwardDependency.callCount).to.eql(4);
+      expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/lodash.js');
+      expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/uniq.js');
+      expect(resolver.syncForwardDependency.thirdCall.args[4]).to.eql('lodash/lib/array/flatten.js');
+      expect(resolver.syncForwardDependency.lastCall.args[4]).to.eql('lodash/lib/compat.js');
     });
-
-    expect(resolver.syncForwardDependency.callCount).to.eql(4);
-    expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/lodash.js');
-    expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/uniq.js');
-    expect(resolver.syncForwardDependency.thirdCall.args[4]).to.eql('lodash/lib/array/flatten.js');
-    expect(resolver.syncForwardDependency.lastCall.args[4]).to.eql('lodash/lib/compat.js');
   });
 
   describe('enforce jsnext:main conventions', function() {
