@@ -87,36 +87,6 @@ describe('Package', function () {
     });
   });
 
-  describe('removeExports',  function() {
-    it('should remove exports from imports', function() {
-      var imports = ['foo', 'bar', 'exports'];
-      expect(Package.removeExports(imports)).to.deep.eql(['foo', 'bar']);
-    });
-  });
-
-  describe('dedupedImports',  function() {
-    it('should remove duplicates from an import map', function() {
-      var imports = Package.flattenImports({
-        'foo.js': {
-          exports: {
-            exported: [],
-            specifiers: []
-          },
-          imports: [a, b, c, d]
-        },
-        'bar.js': {
-          exports: {
-            exported: [],
-            specifiers: []
-          },
-          imports: [c, d]
-        }
-      });
-
-      expect(Package.dedupeImports(imports)).to.deep.eql(['a', 'b', 'c', 'd']);
-    });
-  });
-
   describe('removeFileExtensionsFromGraph',  function() {
     it('should remove file extension from graph', function() {
 
@@ -147,7 +117,7 @@ describe('Package', function () {
   describe('addToDenormalizedGraph',  function() {
     it('it should add to an existing graph', function() {
       var pack = new Package({
-        graph: {
+        denormalizedGraph: {
           'b': {
             imports: [],
             exports: []
@@ -167,17 +137,6 @@ describe('Package', function () {
           exports: []
         }
       });
-    });
-  });
-
-  describe('addToDedupedImports',  function() {
-    it('it should add to the existing dedupedImports graph', function() {
-      var pack = new Package({
-        dedupedImports: ['a', 'b']
-      });
-
-      pack.addToDedupedImports(['a', 'b', 'c']);
-      expect(pack.dedupedImports).to.deep.eql(['a', 'b', 'c']);
     });
   });
 
@@ -245,7 +204,6 @@ describe('Package', function () {
       });
 
       expect(pack.denormalizedGraph).to.deep.eql(graph);
-      expect(pack.dedupedImports).to.deep.eql(['b', 'c']);
     });
   });
 });
