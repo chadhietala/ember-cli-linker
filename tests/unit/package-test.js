@@ -206,4 +206,18 @@ describe('Package', function () {
       expect(pack.denormalizedGraph).to.deep.eql(graph);
     });
   });
+
+  describe('getName', function() {
+    it('should return the package name', function() {
+      expect(Package.getName('foo/bar/baz')).to.eql('foo');
+    });
+
+    it('should return a scoped package name', function() {
+      expect(Package.getName('@linkedin/foo/bar')).to.eql('@linkedin/foo');
+    });
+
+    it('tests should fall back to the passed tests package', function() {
+      expect(Package.getName('foo/tests/bar-test', 'foo/tests')).to.eql('foo/tests');
+    });
+  });
 });

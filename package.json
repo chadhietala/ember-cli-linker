@@ -24,6 +24,7 @@
     "exists-sync": "0.0.3",
     "fs-extra": "^0.17.0",
     "graphlib": "^1.0.4",
+    "graphlib-dot": "^0.6.1",
     "hash-for-dep": "0.0.3",
     "json-stable-stringify": "^1.0.0",
     "lodash-node": "^3.6.0",
