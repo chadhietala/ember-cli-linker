@@ -6,8 +6,7 @@ var walkSync = require('walk-sync');
 var generateTrees = require('../helpers/generate-trees');
 var AllDependencies = require('../../lib/all-dependencies');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
-
-var dot = require('graphlib-dot');
+var Graph = require('graphlib').Graph;
 
 function generateGraphHashes() {
   return {
@@ -58,12 +57,6 @@ var exprts = {
 var b = generateDefaultImport('example-app/b', 'b');
 var c = generateDefaultImport('example-app/c', 'c');
 
-function sync(packages) {
-  packages.forEach(function(pack) {
-    AllDependencies.synced.apply(AllDependencies, pack);
-  });
-}
-
 function updatePackages(packages) {
   packages.forEach(function(pack) {
     AllDependencies.update.apply(AllDependencies, pack);
@@ -75,8 +68,8 @@ describe('Linker', function () {
   var paths = walkSync('tests/fixtures/example-app/tree');
 
   beforeEach(function() {
-    AllDependencies._synced = {};
-    AllDependencies._graph = {};
+    AllDependencies.graph = new Graph();
+    AllDependencies._packages = {};
     linker = new Linker(generateTrees(paths), {
       entries: ['example-app'],
       treeDescriptors: generateTreeDescriptors(paths)
@@ -309,7 +302,7 @@ describe('Linker', function () {
       ]);
     });
 
-    it.only('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
+    it('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
       linker.graphHashes = generateGraphHashes();
       var graphHashes = linker.graphHashes;
       var ember = generateDefaultImport('ember', 'ember');
@@ -416,8 +409,8 @@ describe('Linker', function () {
       expect(diffs).to.deep.eql([exampleApp]);
 
       AllDependencies.update({packageName: 'example-app' }, exampleApp.denormalizedGraph);
-      console.log(dot.write(AllDependencies.graph));
-      expect(AllDependencies.graph.nodes()).to.deep.eql([]);
+
+      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b', 'bar/bar']);
     });
   });
 });
