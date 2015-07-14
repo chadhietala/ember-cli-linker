@@ -6,15 +6,14 @@ var walkSync = require('walk-sync');
 var generateTrees = require('../helpers/generate-trees');
 var AllDependencies = require('../../lib/all-dependencies');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
-var path = require('path');
-var Import = require('../../lib/models/import');
+var Graph = require('graphlib').Graph;
 
 function generateGraphHashes() {
   return {
     'example-app':  {
       name: 'example-app',
       hash: '2ed8ffd474b4b640a931915d6b40f6f6',
-      graph: {
+      denormalizedGraph: {
         'example-app/a' : {
           exports: {
             exported: [],
@@ -58,12 +57,6 @@ var exprts = {
 var b = generateDefaultImport('example-app/b', 'b');
 var c = generateDefaultImport('example-app/c', 'c');
 
-function sync(packages) {
-  packages.forEach(function(pack) {
-    AllDependencies.synced.apply(AllDependencies, pack);
-  });
-}
-
 function updatePackages(packages) {
   packages.forEach(function(pack) {
     AllDependencies.update.apply(AllDependencies, pack);
@@ -75,8 +68,8 @@ describe('Linker', function () {
   var paths = walkSync('tests/fixtures/example-app/tree');
 
   beforeEach(function() {
-    AllDependencies._synced = {};
-    AllDependencies._graph = {};
+    AllDependencies.graph = new Graph();
+    AllDependencies._packages = {};
     linker = new Linker(generateTrees(paths), {
       entries: ['example-app'],
       treeDescriptors: generateTreeDescriptors(paths)
@@ -95,81 +88,10 @@ describe('Linker', function () {
     }).to.throw(/You must pass TreeDescriptors that describe the trees in the project./);
   });
 
-  describe('cacheImport', function() {
-    it('should cache an import by its type', function() {
-      AllDependencies.update({
-        root: process.cwd(),
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
-        packageName: 'example-app',
-        pkg: { name: 'example-app', version: '1.0.0' },
-        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foo'
-      }, {
-        'foo': {
-          imports: ['npm:a']
-        }
-      });
+  describe('decorateTreeDescriptors', function() {
 
-      linker.cacheImport(new Import({
-        name: 'a',
-        packageName: 'sample-package',
-        type: 'npm',
-        importer: 'example-app'
-      }), 'example-app');
-
-      expect(linker.importCache).to.deep.eql({
-        npm: {
-          'sample-package': {
-            imports: [new Import({importer: 'example-app', name: 'a', packageName: 'sample-package', type: 'npm'})],
-            parent: AllDependencies.for('example-app')
-          }
-        }
-      });
-    });
-
-    it('should update the existing import cache with a new import', function() {
-      AllDependencies.update({
-        root: process.cwd(),
-        nodeModulesPath: process.cwd() + path.sep + 'node_modules',
-        packageName: 'example-app',
-        pkg: { name: 'example-app', version: '1.0.0' },
-        relativePaths: ['example-app/', 'example-app/a.js', 'example-app/b.js'],
-        parent: null,
-        srcDir: process.cwd() + path.sep + 'tmp_foo'
-      }, {
-        'foo': {
-          imports: ['npm:a', 'npm:b']
-        }
-      });
-
-      linker.cacheImport(new Import({
-        name: 'a',
-        packageName: 'sample-package',
-        type: 'npm',
-        importer: 'example-app'
-      }), 'example-app');
-
-      linker.cacheImport(new Import({
-        name: 'b',
-        packageName: 'sample-package',
-        type: 'npm',
-        importer: 'example-app'
-      }), 'example-app');
-
-      expect(linker.importCache).to.deep.eql({
-        npm: {
-          'sample-package': {
-            imports: [
-              new Import({importer: 'example-app', name: 'a', packageName: 'sample-package', type: 'npm'}),
-              new Import({importer: 'example-app', name: 'b', packageName: 'sample-package', type: 'npm'})
-            ],
-            parent: AllDependencies.for('example-app')
-          }
-        }
-      });
-    });
   });
+
 
   describe('diffGraph', function() {
     it('should perform an idempotent diff if the graphHashes exist and hashes are the same', function() {
@@ -188,19 +110,20 @@ describe('Linker', function () {
       linker.graphHashes = generateGraphHashes();
       var graphHashes = linker.graphHashes;
 
-      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].graph);
+      AllDependencies.setRoots(['example-app']);
+      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].denormalizedGraph);
 
-      sync([
-        ['example-app', 'example-app/a.js'],
-        ['example-app', 'example-app/b.js']
-      ]);
+      AllDependencies.addNode('example-app/b', {
+        packageName: 'example-app'
+      });
+
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       var exampleApp = {
         name: 'example-app',
         hash: 'c4dedac40c806eb428edc096c4bd6bfb',
-        graph: {
+        denormalizedGraph: {
           'example-app/a' : {
             exports: {
               exported: [],
@@ -219,13 +142,19 @@ describe('Linker', function () {
 
       var diffs = linker.diffGraph();
 
+
       expect(diffs).to.deep.eql([exampleApp]);
-      AllDependencies.update({packageName: 'example-app'}, exampleApp.graph);
-      expect(AllDependencies.getSynced('example-app')).to.deep.eql(['example-app/a.js']);
+      AllDependencies.update({packageName: 'example-app'}, exampleApp.denormalizedGraph);
+
+      AllDependencies.addNode('example-app/a', {
+        packageName: 'example-app'
+      });
+
+      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a']);
       expect(AllDependencies.for('example-app').imports).to.deep.eql({
         'example-app/a': []
       });
-      expect(AllDependencies.for('example-app').graph).to.deep.eql({
+      expect(AllDependencies.for('example-app').denormalizedGraph).to.deep.eql({
         'example-app/a': {
           exports: {
             exported: [],
@@ -240,21 +169,14 @@ describe('Linker', function () {
       linker.graphHashes = generateGraphHashes();
       var graphHashes = linker.graphHashes;
 
-      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].graph);
+      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].denormalizedGraph);
 
-      sync([
-        ['example-app', 'example-app/a.js'],
-        ['example-app', 'example-app/b.js']
-      ]);
-
-      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
-        return ['example-app/', 'example-app/a.js', 'example-app/b.js', 'example-app/c.js'];
-      };
+      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       var exampleApp = {
         name: 'example-app',
         hash: 'c4dedac40c806eb428edc096c4bd6bfb',
-        graph: {
+        denormalizedGraph: {
           'example-app/a' : {
             exports:exprts,
             imports: [b]
@@ -270,6 +192,18 @@ describe('Linker', function () {
         }
       };
 
+      AllDependencies.sync('example-app/a', ['example-app/b'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/b', ['example-app/c'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/c', [], {
+        packageName: 'example-app'
+      });
+
       linker.hashGraphs = function() {
         return {
           'example-app': exampleApp
@@ -279,25 +213,31 @@ describe('Linker', function () {
       var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql([exampleApp]);
-      AllDependencies.update({packageName: 'example-app'}, exampleApp.graph);
+      AllDependencies.update({packageName: 'example-app'}, exampleApp.denormalizedGraph);
       expect(AllDependencies.for('example-app').imports).to.deep.eql({
         'example-app/a': ['example-app/b'],
         'example-app/b': ['example-app/c'],
         'example-app/c': []
       });
 
-      expect(AllDependencies.for('example-app').graph).to.deep.eql({
+      expect(AllDependencies.for('example-app').denormalizedGraph).to.deep.eql({
         'example-app/a': { exports: exprts, imports: [b] },
         'example-app/b': { exports: exprts, imports: [c] },
         'example-app/c': { exports: exprts, imports: [] }
       });
+
+      expect(AllDependencies.graph.nodes()).to.deep.eql([
+        'example-app/a',
+        'example-app/b',
+        'example-app/c'
+      ]);
     });
 
     it('should perform an idempotent operation if there edges into a dropping edge', function() {
       linker.graphHashes = generateGraphHashes();
       var graphHashes = linker.graphHashes;
       graphHashes['foobiz'] = {
-        graph: {
+        denormalizedGraph: {
           'foobiz/foo': {
             exports: exprts,
             imports: [b]
@@ -308,19 +248,24 @@ describe('Linker', function () {
       };
 
       updatePackages([
-        [{packageName: 'foobiz'}, graphHashes.foobiz.graph],
-        [{packageName: 'example-app'}, graphHashes['example-app'].graph]
+        [{packageName: 'foobiz'}, graphHashes.foobiz.denormalizedGraph],
+        [{packageName: 'example-app'}, graphHashes['example-app'].denormalizedGraph]
       ]);
 
-      sync([
-        ['example-app', 'example-app/a.js'],
-        ['example-app', 'example-app/b.js'],
-        ['foobiz', 'foobiz/foo.js']
-      ]);
+      AllDependencies.sync('example-app/a', ['example-app/b'], {
+        packageName: 'example-app'
+      });
 
-      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {
-        return ['example-app/', 'example-app/a.js'];
-      };
+      AllDependencies.sync('example-app/b', [], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('foobiz/foo', ['example-app/b'], {
+        packageName: 'foobiz'
+      });
+
+
+      AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       var exampleApp = {
         name: 'example-app',
@@ -340,19 +285,21 @@ describe('Linker', function () {
         };
       };
 
-      // Asserting example-app/b.js is here from the revious resolve
-      expect(AllDependencies.getSynced()).to.deep.eql({
-        'example-app': ['example-app/a.js', 'example-app/b.js'],
-        foobiz: ['foobiz/foo.js']
-      });
+      expect(AllDependencies.graph.nodes()).to.deep.eql([
+        'example-app/a',
+        'example-app/b',
+        'foobiz/foo'
+      ]);
 
       var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql([exampleApp]);
-      expect(AllDependencies.getSynced()).to.deep.eql({
-        'example-app': ['example-app/a.js', 'example-app/b.js'],
-        foobiz: ['foobiz/foo.js']
-      });
+
+      expect(AllDependencies.graph.nodes()).to.deep.eql([
+        'example-app/a',
+        'example-app/b',
+        'foobiz/foo'
+      ]);
     });
 
     it('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
@@ -360,11 +307,12 @@ describe('Linker', function () {
       var graphHashes = linker.graphHashes;
       var ember = generateDefaultImport('ember', 'ember');
       var foo = generateDefaultImport('foobiz/foo', 'foo');
-      graphHashes['example-app'].graph['example-app/a'].imports.push(ember);
-      graphHashes['example-app'].graph['example-app/b'].imports.push(foo);
+      graphHashes['example-app'].denormalizedGraph['example-app/a'].imports.push(ember);
+      graphHashes['example-app'].denormalizedGraph['example-app/b'].imports.push(foo);
 
+      AllDependencies.setRoots(['example-app']);
       graphHashes.foobiz = {
-        graph: {
+        denormalizedGraph: {
           'foobiz/foo': {
             exports: exprts,
             imports: [generateDefaultImport('bar/bar', 'bar')]
@@ -375,7 +323,7 @@ describe('Linker', function () {
       };
 
       graphHashes.bar = {
-        graph: {
+        denormalizedGraph: {
           'bar/bar': {
             exports: exprts,
             imports: [ember]
@@ -386,7 +334,7 @@ describe('Linker', function () {
       };
 
       graphHashes.ember = {
-        graph: {
+        denormalizedGraph: {
           'ember': {
             exports: exprts,
             imports: []
@@ -397,26 +345,38 @@ describe('Linker', function () {
       };
 
       updatePackages([
-        [{packageName: 'ember'}, graphHashes.ember.graph],
-        [{packageName: 'example-app'}, graphHashes['example-app'].graph],
-        [{packageName: 'foobiz'}, graphHashes.foobiz.graph],
-        [{packageName: 'bar'}, graphHashes.bar.graph]
+        [{packageName: 'ember'}, graphHashes.ember.denormalizedGraph],
+        [{packageName: 'example-app'}, graphHashes['example-app'].denormalizedGraph],
+        [{packageName: 'foobiz'}, graphHashes.foobiz.denormalizedGraph],
+        [{packageName: 'bar'}, graphHashes.bar.denormalizedGraph]
       ]);
 
-      sync([
-        ['example-app', 'example-app/a.js'],
-        ['ember', 'ember.js'],
-        ['example-app', 'example-app/b.js'],
-        ['foobiz', 'foobiz/foo.js'],
-        ['bar', 'bar/bar.js']
-      ]);
+      AllDependencies.sync('example-app/a', ['ember', 'example-app/b'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('ember', [], {
+        packageName: 'ember'
+      });
+
+      AllDependencies.sync('example-app/b', ['foobiz/foo'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('foobiz/foo', ['bar/bar'], {
+        packageName: 'foobiz'
+      });
+
+      AllDependencies.sync('bar/bar', ['ember'], {
+        packageName: 'bar'
+      });
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       var exampleApp = {
         name: 'example-app',
         hash: 'c4dedac40c806eb428edc096c4bd6bfb',
-        graph: {
+        denormalizedGraph: {
           'example-app/a' : {
             exports: exprts,
             imports: [b, ember]
@@ -428,7 +388,6 @@ describe('Linker', function () {
         }
       };
 
-
       linker.hashGraphs = function() {
         return {
           'example-app': exampleApp,
@@ -438,23 +397,20 @@ describe('Linker', function () {
         };
       };
 
-      expect(AllDependencies.getSynced()).to.deep.eql({
-        'example-app': ['example-app/a.js', 'example-app/b.js'],
-        ember: ['ember.js'],
-        foobiz: ['foobiz/foo.js'],
-        bar: ['bar/bar.js']
-      });
+      expect(AllDependencies.graph.nodes()).to.deep.eql([
+        'example-app/a',
+        'ember',
+        'example-app/b',
+        'foobiz/foo',
+        'bar/bar'
+      ]);
 
       var diffs = linker.diffGraph();
-
       expect(diffs).to.deep.eql([exampleApp]);
 
-      AllDependencies.update({packageName: 'example-app'}, exampleApp.graph);
+      AllDependencies.update({packageName: 'example-app' }, exampleApp.denormalizedGraph);
 
-      expect(AllDependencies.getSynced()).to.deep.eql({
-        'example-app': ['example-app/a.js', 'example-app/b.js'],
-        ember: ['ember.js']
-      });
+      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b', 'bar/bar']);
     });
   });
 });

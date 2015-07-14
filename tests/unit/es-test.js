@@ -8,6 +8,7 @@ var temp = require('quick-temp');
 var Import = require('../../lib/models/import');
 var expect = require('chai').expect;
 var AllDependencies = require('../../lib/all-dependencies');
+var Graph = require('graphlib').Graph;
 
 describe('es resolver', function() {
 
@@ -39,20 +40,21 @@ describe('es resolver', function() {
   }];
 
   beforeEach(function() {
-    sinon.spy(resolver, 'syncForwardDependency');
+    sinon.spy(AllDependencies, 'addNode');
   });
 
   afterEach(function() {
-    AllDependencies._synced = {};
-    AllDependencies._graph = {};
-    resolver.syncForwardDependency.restore();
+    AllDependencies._packages = {};
+    AllDependencies.graph = new Graph();
+    AllDependencies.addNode.restore();
   });
 
   it('should sync forward non-main file it\'s imports', function() {
     var importInfo = new Import({
+      importerPackageName: 'ember',
       importer: 'ember',
       packageName: 'lodash',
-      name: 'lodash/lib/array/uniq',
+      importName: 'lodash/lib/array/uniq',
       type: 'es'
     });
 
@@ -61,18 +63,19 @@ describe('es resolver', function() {
     return resolver.resolve(tempDir, importInfo, {
       treeDescriptors: generateTreeDescriptors(treeMeta)
     }).then(function() {
-      expect(resolver.syncForwardDependency.callCount).to.eql(3);
-      expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/array/uniq.js');
-      expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/flatten.js');
-      expect(resolver.syncForwardDependency.thirdCall.args[4]).to.eql('lodash/lib/compat.js');
+      expect(AllDependencies.addNode.callCount).to.eql(3);
+      expect(AllDependencies.addNode.firstCall.args[0]).to.eql('lodash/lib/array/uniq');
+      expect(AllDependencies.addNode.secondCall.args[0]).to.eql('lodash/lib/array/flatten');
+      expect(AllDependencies.addNode.thirdCall.args[0]).to.eql('lodash/lib/compat');
     });
   });
 
   it('should sync forward main file it\'s imports', function() {
     var importInfo = new Import({
       importer: 'ember',
+      importerPackageName: 'ember',
       packageName: 'lodash',
-      name: 'lodash',
+      importName: 'lodash',
       type: 'es'
     });
 
@@ -81,11 +84,11 @@ describe('es resolver', function() {
     return resolver.resolve(tempDir, importInfo, {
       treeDescriptors: generateTreeDescriptors(treeMeta)
     }).then(function() {
-      expect(resolver.syncForwardDependency.callCount).to.eql(4);
-      expect(resolver.syncForwardDependency.firstCall.args[4]).to.eql('lodash/lib/lodash.js');
-      expect(resolver.syncForwardDependency.secondCall.args[4]).to.eql('lodash/lib/array/uniq.js');
-      expect(resolver.syncForwardDependency.thirdCall.args[4]).to.eql('lodash/lib/array/flatten.js');
-      expect(resolver.syncForwardDependency.lastCall.args[4]).to.eql('lodash/lib/compat.js');
+      expect(AllDependencies.addNode.callCount).to.eql(4);
+      expect(AllDependencies.addNode.firstCall.args[0]).to.eql('lodash/lib/lodash');
+      expect(AllDependencies.addNode.secondCall.args[0]).to.eql('lodash/lib/array/uniq');
+      expect(AllDependencies.addNode.thirdCall.args[0]).to.eql('lodash/lib/array/flatten');
+      expect(AllDependencies.addNode.lastCall.args[0]).to.eql('lodash/lib/compat');
     });
   });
 
@@ -108,9 +111,10 @@ describe('es resolver', function() {
 
     it('should throw if the import does not have jsnext:main conventions', function() {
       var importInfo = new Import({
+        importerPackageName: 'ember',
         importer: 'ember',
         packageName: 'lodash',
-        name: 'lodash',
+        importName: 'lodash',
         type: 'es'
       });
 

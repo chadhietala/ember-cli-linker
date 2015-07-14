@@ -76,32 +76,22 @@ describe('linker acceptance', function () {
       treeDescriptors: generateTreeDescriptors(treeMeta)
     }).then(function(results) {
       expect(results.files.sort()).to.deep.eql([
-        'browserified/ember-moment/ember-moment-legacy.js',
-        'browserified/ember/ember-legacy.js',
+        'browserified-bundle.js',
         'ember-load-initializers.js',
-        'ember-load-initializers/dep-graph.json',
-        'ember-moment/dep-graph.json',
         'ember-moment/helpers/ago.js',
         'ember-moment/helpers/duration.js',
         'ember-moment/helpers/moment.js',
         'ember-resolver.js',
-        'ember-resolver/dep-graph.json',
         'ember.js',
-        'ember/dep-graph.json',
         'example-app/app.js',
         'example-app/config/environment.js',
-        'example-app/dep-graph.json',
         'example-app/index.html',
         'example-app/initializers/ember-moment.js',
         'example-app/router.js',
-        'example-app/tests/dep-graph.json',
         'example-app/tests/unit/components/foo-bar-test.js',
         'lodash/lib/array/flatten.js',
-        'lodash/lib/array/flatten.js.map',
         'lodash/lib/array/uniq.js',
-        'lodash/lib/array/uniq.js.map',
         'lodash/lib/compat.js',
-        'lodash/lib/compat.js.map'
       ]);
     });
   });
