@@ -131,4 +131,31 @@ describe('es resolver', function() {
       expect(willThrow).to.throw(/You attempted to resolve "lodash" from the "lodash" package. To accurately resolve ES6 modules, the package must provide a "jsnext:main" key in it\'s package.json./);
     });
   });
+
+  describe('_babelOptions', function() {
+    it('will return the defaults', function() {
+      resolver.babelOptions = {};
+      var options = resolver._babelOptions('foo');
+
+      delete options.resolveModuleSource;
+
+      expect(options).to.deep.eql({
+        modules: 'amd',
+        moduleIds: true,
+        moduleId: 'foo',
+        filename: 'foo',
+        nonStandard: false,
+        highlightCode: false,
+        sourceMaps: true
+      });
+    });
+
+    it('should merge with the defaults', function() {
+      resolver.babelOptions = { whitelist: ['es7.generators'], nonStandard: true };
+      var options = resolver._babelOptions('foo');
+
+      expect(options.whitelist).to.deep.eql(['es7.generators']);
+      expect(options.nonStandard).to.eql(true);
+    });
+  });
 });
