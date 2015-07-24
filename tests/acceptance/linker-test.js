@@ -70,10 +70,15 @@ describe('linker acceptance', function () {
     });
   });
 
-  it('should only include files in the dependency graph', function () {
-    return prePackager(generateTrees(treeMeta), {
+  it.only('should only include files in the dependency graph', function () {
+    var descs = generateTreeDescriptors(treeMeta);
+    var trees = Object.keys(descs).map(function(name) {
+      return descs[name].tree;
+    });
+
+    return prePackager(trees, {
       entries: ['example-app', 'example-app/tests'],
-      treeDescriptors: generateTreeDescriptors(treeMeta)
+      treeDescriptors: descs
     }).then(function(results) {
       expect(results.files.sort()).to.deep.eql([
         'browserified-bundle.js',
