@@ -8,11 +8,10 @@ var AllDependencies = require('../../lib/all-dependencies');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
 var Graph = require('graphlib').Graph;
 
-function generateGraphHashes() {
+function generateGraphs() {
   return {
     'example-app':  {
       name: 'example-app',
-      hash: '2ed8ffd474b4b640a931915d6b40f6f6',
       denormalizedGraph: {
         'example-app/a' : {
           exports: {
@@ -88,17 +87,12 @@ describe('Linker', function () {
     }).to.throw(/You must pass TreeDescriptors that describe the trees in the project./);
   });
 
-  describe('decorateTreeDescriptors', function() {
-
-  });
-
-
   describe('diffGraph', function() {
-    it('should perform an idempotent diff if the graphHashes exist and hashes are the same', function() {
-      linker.graphHashes = generateGraphHashes();
+    it('should perform an idempotent diff if the graphs exist and they are the same', function() {
+      linker._graphs = generateGraphs();
 
-      linker.hashGraphs = function() {
-        return generateGraphHashes();
+      linker._graphsByName = function() {
+        return generateGraphs();
       };
 
       var diffs = linker.diffGraph();
@@ -107,22 +101,20 @@ describe('Linker', function () {
 
     it('should align the graph if an import is removed', function() {
 
-      linker.graphHashes = generateGraphHashes();
-      var graphHashes = linker.graphHashes;
+      linker._graphs = generateGraphs();
+      var graphs = linker._graphs;
 
       AllDependencies.setRoots(['example-app']);
-      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].denormalizedGraph);
+      AllDependencies.update({ packageName: 'example-app' }, graphs['example-app'].denormalizedGraph);
 
       AllDependencies.addNode('example-app/b', {
         packageName: 'example-app'
       });
 
-
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       var exampleApp = {
         name: 'example-app',
-        hash: 'c4dedac40c806eb428edc096c4bd6bfb',
         denormalizedGraph: {
           'example-app/a' : {
             exports: {
@@ -134,7 +126,7 @@ describe('Linker', function () {
         }
       };
 
-      linker.hashGraphs = function() {
+      linker._graphsByName = function() {
         return {
           'example-app': exampleApp
         };
@@ -166,27 +158,35 @@ describe('Linker', function () {
     });
 
     it('should align the graph if an import is added', function() {
-      linker.graphHashes = generateGraphHashes();
-      var graphHashes = linker.graphHashes;
+      linker._graphs = generateGraphs();
+      var graphs = linker._graphs;
 
-      AllDependencies.update({ packageName: 'example-app' }, graphHashes['example-app'].denormalizedGraph);
+      AllDependencies.update({ packageName: 'example-app' }, graphs['example-app'].denormalizedGraph);
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
       var exampleApp = {
         name: 'example-app',
-        hash: 'c4dedac40c806eb428edc096c4bd6bfb',
         denormalizedGraph: {
           'example-app/a' : {
-            exports:exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: [b]
           },
           'example-app/b': {
-            exports:exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: [c]
           },
           'example-app/c': {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: []
           }
         }
@@ -204,7 +204,7 @@ describe('Linker', function () {
         packageName: 'example-app'
       });
 
-      linker.hashGraphs = function() {
+      linker._graphsByName = function() {
         return {
           'example-app': exampleApp
         };
@@ -234,22 +234,24 @@ describe('Linker', function () {
     });
 
     it('should perform an idempotent operation if there edges into a dropping edge', function() {
-      linker.graphHashes = generateGraphHashes();
-      var graphHashes = linker.graphHashes;
-      graphHashes['foobiz'] = {
+      linker._graphs = generateGraphs();
+      var graphs = linker._graphs;
+      graphs['foobiz'] = {
         denormalizedGraph: {
           'foobiz/foo': {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: [b]
           }
         },
-        name: 'foobiz',
-        hash: 'dbd7abe86d2bf760de14681cf990eced'
+        name: 'foobiz'
       };
 
       updatePackages([
-        [{packageName: 'foobiz'}, graphHashes.foobiz.denormalizedGraph],
-        [{packageName: 'example-app'}, graphHashes['example-app'].denormalizedGraph]
+        [{packageName: 'foobiz'}, graphs.foobiz.denormalizedGraph],
+        [{packageName: 'example-app'}, graphs['example-app'].denormalizedGraph]
       ]);
 
       AllDependencies.sync('example-app/a', ['example-app/b'], {
@@ -269,19 +271,21 @@ describe('Linker', function () {
 
       var exampleApp = {
         name: 'example-app',
-        hash: 'c4dedac40c806eb428edc096c4bd6bfb',
-        graph: {
+        denormalizedGraph: {
           'example-app/a' : {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: []
           }
         }
       };
 
-      linker.hashGraphs = function() {
+      linker._graphsByName = function() {
         return {
           'example-app': exampleApp,
-          'foobiz': linker.graphHashes.foobiz
+          'foobiz': linker._graphs.foobiz
         };
       };
 
@@ -303,52 +307,58 @@ describe('Linker', function () {
     });
 
     it('should drop transitive dependency if the entry node is dropped but retain nodes with edges', function() {
-      linker.graphHashes = generateGraphHashes();
-      var graphHashes = linker.graphHashes;
+      linker._graphs = generateGraphs();
+      var graphs = linker._graphs;
       var ember = generateDefaultImport('ember', 'ember');
       var foo = generateDefaultImport('foobiz/foo', 'foo');
-      graphHashes['example-app'].denormalizedGraph['example-app/a'].imports.push(ember);
-      graphHashes['example-app'].denormalizedGraph['example-app/b'].imports.push(foo);
+      graphs['example-app'].denormalizedGraph['example-app/a'].imports.push(ember);
+      graphs['example-app'].denormalizedGraph['example-app/b'].imports.push(foo);
 
       AllDependencies.setRoots(['example-app']);
-      graphHashes.foobiz = {
+      graphs.foobiz = {
         denormalizedGraph: {
           'foobiz/foo': {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: [generateDefaultImport('bar/bar', 'bar')]
           }
         },
-        name: 'foobiz',
-        hash: 'dbd7abe86d2bf760de14681cf990eced'
+        name: 'foobiz'
       };
 
-      graphHashes.bar = {
+      graphs.bar = {
         denormalizedGraph: {
           'bar/bar': {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: [ember]
           }
         },
-        name: 'bar',
-        hash: '9b7c669dd11a0333039ad97cb5a92b17'
+        name: 'bar'
       };
 
-      graphHashes.ember = {
+      graphs.ember = {
         denormalizedGraph: {
           'ember': {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: []
           }
         },
-        name: 'ember',
-        hash: 'daljk3325jdksl4ajk324923498hjadn32'
+        name: 'ember'
       };
 
       updatePackages([
-        [{packageName: 'ember'}, graphHashes.ember.denormalizedGraph],
-        [{packageName: 'example-app'}, graphHashes['example-app'].denormalizedGraph],
-        [{packageName: 'foobiz'}, graphHashes.foobiz.denormalizedGraph],
-        [{packageName: 'bar'}, graphHashes.bar.denormalizedGraph]
+        [{packageName: 'ember'}, graphs.ember.denormalizedGraph],
+        [{packageName: 'example-app'}, graphs['example-app'].denormalizedGraph],
+        [{packageName: 'foobiz'}, graphs.foobiz.denormalizedGraph],
+        [{packageName: 'bar'}, graphs.bar.denormalizedGraph]
       ]);
 
       AllDependencies.sync('example-app/a', ['ember', 'example-app/b'], {
@@ -375,25 +385,30 @@ describe('Linker', function () {
 
       var exampleApp = {
         name: 'example-app',
-        hash: 'c4dedac40c806eb428edc096c4bd6bfb',
         denormalizedGraph: {
           'example-app/a' : {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: [b, ember]
           },
           'example-app/b': {
-            exports: exprts,
+            exports: {
+              exported: [],
+              specifiers: []
+            },
             imports: []
           }
         }
       };
 
-      linker.hashGraphs = function() {
+      linker._graphsByName = function() {
         return {
           'example-app': exampleApp,
-          foobiz: graphHashes.foobiz,
-          bar: graphHashes.bar,
-          ember: graphHashes.ember
+          foobiz: graphs.foobiz,
+          bar: graphs.bar,
+          ember: graphs.ember
         };
       };
 
@@ -410,7 +425,7 @@ describe('Linker', function () {
 
       AllDependencies.update({packageName: 'example-app' }, exampleApp.denormalizedGraph);
 
-      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b', 'bar/bar']);
+      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b']);
     });
   });
 });

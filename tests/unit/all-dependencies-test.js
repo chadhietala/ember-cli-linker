@@ -2,7 +2,7 @@
 
 var AllDependencies = require('../../lib/all-dependencies');
 var Package = require('../../lib/models/package');
-var Descriptor = require('../../lib/models/descriptor');
+var Descriptor = require('ember-cli-tree-descriptor');
 var expect = require('chai').expect;
 var Graph = require('graphlib').Graph;
 
@@ -14,12 +14,6 @@ function clone(obj) {
   });
 
   return ret;
-}
-
-function modelEquals(result, expectation) {
-  Object.keys(result).forEach(function(key) {
-    expect(result[key]).to.deep.equal(expectation[key]);
-  });
 }
 
 function stripFileExtensions(graph) {
@@ -162,7 +156,7 @@ describe('all dependencies unit', function() {
     });
   });
 
-  describe('getPackagePathsAndNames', function() {
+  describe('getDescriptors', function() {
     it('should return meta data for a node', function() {
       AllDependencies._packages = {
         a: {
@@ -172,9 +166,9 @@ describe('all dependencies unit', function() {
           descriptor: { srcDir: '/b' }
         }
       };
-      expect(AllDependencies.getPackagePathsAndNames()).to.deep.eql([
-        ['a', '/a'],
-        ['b', '/b']
+      expect(AllDependencies.getDescriptors()).to.deep.eql([
+        { srcDir: '/a' },
+        { srcDir: '/b' }
       ]);
     });
   });
@@ -293,7 +287,7 @@ describe('all dependencies unit', function() {
       var _denormalizedGraph = stripFileExtensions(denormalizedGraph);
 
       expect(AllDependencies._packages['example-app']).to.deep.eql(new Package({
-        descriptor: new Descriptor(descriptor),
+        descriptor: descriptor,
         denormalizedGraph: _denormalizedGraph,
         imports: {
           'example-app/app': ['ember'],
@@ -318,7 +312,7 @@ describe('all dependencies unit', function() {
       delete desc.updateRelativePaths;
 
       expect(AllDependencies._packages['example-app']).to.deep.eql(new Package({
-        descriptor: new Descriptor(descriptor),
+        descriptor: descriptor,
         denormalizedGraph: _denormalizedGraph,
         imports: {
           'example-app/app': ['ember'],
@@ -504,8 +498,7 @@ describe('all dependencies unit', function() {
         'ember',
         'example-app/router',
         'npm:jquery',
-        'jquery',
-        'lodash'
+        'jquery'
       ]);
     });
   });
@@ -515,7 +508,7 @@ describe('all dependencies unit', function() {
       AllDependencies.update(descriptor, denormalizedGraph);
       var _denormalizedGraph = stripFileExtensions(denormalizedGraph);
       expect(AllDependencies.for('example-app')).to.deep.equal(new Package({
-        descriptor: new Descriptor(descriptor),
+        descriptor: descriptor,
         denormalizedGraph: _denormalizedGraph,
         imports: {
           'example-app/app': ['ember'],
@@ -578,7 +571,6 @@ describe('all dependencies unit', function() {
       AllDependencies.add(desc, 'bazing/a', denormalized);
       var pack = AllDependencies.for('bazing');
 
-      modelEquals(pack.descriptor, new Descriptor(desc));
       expect(pack.denormalizedGraph).to.deep.eql({
         'bazing/a': denormalized
       });
@@ -632,7 +624,6 @@ describe('all dependencies unit', function() {
       AllDependencies.add(desc, 'bazing/b', b);
       var pack = AllDependencies.for('bazing');
 
-      modelEquals(pack.descriptor, new Descriptor(desc));
       expect(pack.denormalizedGraph).to.deep.eql({
         'bazing/a': a,
         'bazing/b': b
