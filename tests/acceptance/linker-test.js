@@ -10,6 +10,8 @@ var sinon           = require('sinon');
 var walkSync        = require('walk-sync');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
 var generateTrees = require('../helpers/generate-trees');
+var AllDependencies = require('../../lib/all-dependencies');
+var Graph           = require('graphlib').Graph;
 var find            = stew.find;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
@@ -23,14 +25,6 @@ describe('linker acceptance', function () {
   var testSubject = function() {
       return new Linker(arguments[0], arguments[1]);
   };
-  var prePackager = makeTestHelper({
-    fixturePath: fixturePath,
-    subject: testSubject,
-    filter: function(paths) {
-      return paths.filter(function(path) { return !/\/$/.test(path); });
-    }
-  });
-  var paths = walkSync('tests/fixtures/example-app/tree');
 
   var treeMeta = [{
       name: 'example-app',
@@ -59,8 +53,22 @@ describe('linker acceptance', function () {
       type: 'addon'
   }];
 
+  var prePackager;
+  beforeEach(function() {
+    prePackager = makeTestHelper({
+      fixturePath: fixturePath,
+      subject: testSubject,
+      filter: function(paths) {
+        return paths.filter(function(path) { return !/\/$/.test(path); });
+      }
+    });
+  });
+
 
   afterEach(function () {
+    AllDependencies._packages = {};
+    AllDependencies.graph = new Graph();
+    prePackager = null;
     return cleanupBuilders();
   });
 
@@ -105,7 +113,7 @@ describe('linker acceptance', function () {
     });
   });
 
-  it.only('should remove files from the output if the imports are removed', function () {
+  it('should remove files from the output if the imports are removed', function () {
     var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/tree/example-app/dep-graph.json');
     var graph = fs.readJSONSync(graphPath);
     var graphClone = clone(graph);
@@ -114,18 +122,15 @@ describe('linker acceptance', function () {
     var trees = orderedDescs.map(function(desc) {
       return desc.tree;
     });
-
-
     var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/tree/example-app/initializers/ember-moment.js');
 
     return prePackager(trees, {
-      entries: ['example-app'],
+      entries: ['example-app', 'example-app/tests'],
       treeDescriptors: {
         ordered: orderedDescs,
         map: descs
       },
     }).then(function(results) {
-
       delete graphClone['example-app/initializers/ember-moment.js'];
 
       fs.outputJSONSync(graphPath, graphClone);
@@ -136,20 +141,16 @@ describe('linker acceptance', function () {
       // TODO find a better way of restoring this
       fs.outputJSONSync(graphPath, graph);
       fs.writeFileSync(initializer, '');
+
       expect(results.files.sort()).to.deep.equal([
-        'browserified/ember/ember-legacy.js',
+        'browserified-bundle.js',
         'ember-load-initializers.js',
-        'ember-load-initializers/dep-graph.json',
         'ember-resolver.js',
-        'ember-resolver/dep-graph.json',
         'ember.js',
-        'ember/dep-graph.json',
         'example-app/app.js',
         'example-app/config/environment.js',
-        'example-app/dep-graph.json',
         'example-app/index.html',
         'example-app/router.js',
-        'example-app/tests/dep-graph.json',
         'example-app/tests/unit/components/foo-bar-test.js',
         'lodash/lib/array/flatten.js',
         'lodash/lib/array/uniq.js',
@@ -159,10 +160,19 @@ describe('linker acceptance', function () {
     });
   });
 
-  it.skip('should transpile regular es6 modules', function() {
-    return prePackager(generateTrees(treeMeta), {
+  it('should transpile regular es6 modules', function() {
+    var orderedDescs = generateTreeDescriptors(treeMeta, true);
+    var descs = generateTreeDescriptors(treeMeta);
+    var trees = orderedDescs.map(function(desc) {
+      return desc.tree;
+    });
+
+    return prePackager(trees, {
       entries: ['example-app', 'example-app/tests'],
-      treeDescriptors: generateTreeDescriptors(paths)
+      treeDescriptors: {
+        ordered: orderedDescs,
+        map: descs
+      }
     }).then(function(results) {
       var babelified = fs.readFileSync(results.directory + '/lodash/lib/array/uniq.js', 'utf8');
       expect(babelified.indexOf('=>')).to.be.lt(0);
@@ -172,14 +182,14 @@ describe('linker acceptance', function () {
 
   // TODO
   // Spying on functions with broccoli-test-helpers is no bueno
-  describe.skip('node_modules rebuild', function() {
+  describe('node_modules rebuild', function() {
     beforeEach(function() {
       prePackager = makeTestHelper({
         fixturePath: fixturePath,
         subject: testSubject,
         prepSubject: function(subject) {
           subject.resolvers.npm.cache = {};
-          sinon.spy(subject.resolvers.npm, 'updateCache');
+          sinon.spy(subject.resolvers.npm, 'compile');
           return subject;
         }
       });
@@ -190,32 +200,55 @@ describe('linker acceptance', function () {
     });
 
     it('should not re-browserfify if the package has not changed', function() {
-      return prePackager(generateTrees(paths), {
-        entries: ['example-app'],
-        treeDescriptors: generateTreeDescriptors(paths)
+      var orderedDescs = generateTreeDescriptors(treeMeta, true);
+      var descs = generateTreeDescriptors(treeMeta);
+      var trees = orderedDescs.map(function(desc) {
+        return desc.tree;
+      });
+
+      return prePackager(trees, {
+        entries: ['example-app', 'example-app/tests'],
+        treeDescriptors: {
+          ordered: orderedDescs,
+          map: descs
+        }
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
         return results.builder();
       }).then(function(results) {
         // Should run for ember and ember-moment
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(2);
-        results.subject.resolvers.npm.updateCache.restore();
+        expect(results.subject.resolvers.npm.compile.callCount).to.equal(3);
+        results.subject.resolvers.npm.compile.restore();
       });
     });
 
     it('should re-browserfify if the package changed', function() {
+      var orderedDescs = generateTreeDescriptors(treeMeta, true);
+      var descs = generateTreeDescriptors(treeMeta);
+      var trees = orderedDescs.map(function(desc) {
+        return desc.tree;
+      });
+      var index = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/index.js';
+      var momentIndexContent = fs.readFileSync(index, 'utf8');
       var moment = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/lib/month.js';
-      return prePackager(generateTrees(paths), {
-        entries: ['example-app'],
-        treeDescriptors: generateTreeDescriptors(paths)
+      return prePackager(trees, {
+        entries: ['example-app', 'example-app/tests'],
+        treeDescriptors: {
+          ordered: orderedDescs,
+          map: descs
+        }
       }).then(function(results) {
         fs.writeFileSync(moment, 'var a = "a";');
+        fs.writeFileSync(index, momentIndexContent + '\n var month = require("./lib/month")');
         return results.builder();
       }).then(function(results) {
         fs.remove(moment);
-        expect(results.subject.resolvers.npm.updateCache.callCount).to.equal(3);
-        results.subject.resolvers.npm.updateCache.restore();
+        fs.writeFileSync(index, momentIndexContent);
+        var contents = fs.readFileSync(path.join(results.directory, 'browserified-bundle.js'), 'utf8');
+        expect( contents.indexOf('var a = "a";') > -1).to.be.ok;
+        expect(results.subject.resolvers.npm.compile.callCount).to.equal(2);
+        results.subject.resolvers.npm.compile.restore();
       });
     });
   });

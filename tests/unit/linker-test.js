@@ -410,7 +410,7 @@ describe('Linker', function () {
 
       AllDependencies.update({packageName: 'example-app' }, exampleApp.denormalizedGraph);
 
-      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b', 'bar/bar']);
+      expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b']);
     });
   });
 });

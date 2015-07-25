@@ -2,6 +2,7 @@
 
 var path = require('path');
 var generateTrees = require('./generate-trees');
+var walkSync = require('walk-sync');
 
 function _createDesc(trees, descs) {
   return function(treeMeta, index) {
@@ -33,7 +34,11 @@ function _createDesc(trees, descs) {
       root: root,
       nodeModulesPath: nodeModulesPath,
       pkg: pkg,
-      tree: trees[index]
+      relativePaths: [],
+      tree: trees[index],
+      updateRelativePaths: function() {
+        this.relativePaths = walkSync(this.srcDir);
+      }
     };
 
     if (descs) {

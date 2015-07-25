@@ -61,7 +61,9 @@
   },
   "example-app/initializers/ember-moment.js": {
     "exports": {
-      "exported": ["initialize"],
+      "exported": [
+        "initialize"
+      ],
       "specifiers": [
         {
           "kind": "local",
@@ -84,7 +86,6 @@
           }
         ]
       },
-
       {
         "imported": [
           "default"
@@ -98,7 +99,6 @@
           }
         ]
       },
-
       {
         "imported": [
           "default"

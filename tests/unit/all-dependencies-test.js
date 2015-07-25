@@ -293,7 +293,7 @@ describe('all dependencies unit', function() {
       var _denormalizedGraph = stripFileExtensions(denormalizedGraph);
 
       expect(AllDependencies._packages['example-app']).to.deep.eql(new Package({
-        descriptor: new Descriptor(descriptor),
+        descriptor: descriptor,
         denormalizedGraph: _denormalizedGraph,
         imports: {
           'example-app/app': ['ember'],
@@ -318,7 +318,7 @@ describe('all dependencies unit', function() {
       delete desc.updateRelativePaths;
 
       expect(AllDependencies._packages['example-app']).to.deep.eql(new Package({
-        descriptor: new Descriptor(descriptor),
+        descriptor: descriptor,
         denormalizedGraph: _denormalizedGraph,
         imports: {
           'example-app/app': ['ember'],
@@ -504,8 +504,7 @@ describe('all dependencies unit', function() {
         'ember',
         'example-app/router',
         'npm:jquery',
-        'jquery',
-        'lodash'
+        'jquery'
       ]);
     });
   });
@@ -515,7 +514,7 @@ describe('all dependencies unit', function() {
       AllDependencies.update(descriptor, denormalizedGraph);
       var _denormalizedGraph = stripFileExtensions(denormalizedGraph);
       expect(AllDependencies.for('example-app')).to.deep.equal(new Package({
-        descriptor: new Descriptor(descriptor),
+        descriptor: descriptor,
         denormalizedGraph: _denormalizedGraph,
         imports: {
           'example-app/app': ['ember'],
