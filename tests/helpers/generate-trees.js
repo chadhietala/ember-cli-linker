@@ -59,7 +59,6 @@ function generateTrees(trees) {
       return checkForDepGraph(setupLoadPath(relativePath.replace('tree/', '')));
     });
 
-    tree.name = treeMeta.name;
     return tree;
   });
 

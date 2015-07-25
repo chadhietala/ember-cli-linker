@@ -2,8 +2,7 @@
 
 var Linker = require('../../lib/linker');
 var expect = require('chai').expect;
-var walkSync = require('walk-sync');
-var generateTrees = require('../helpers/generate-trees');
+var treeMeta = require('../helpers/tree-meta');
 var AllDependencies = require('../../lib/all-dependencies');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
 var Graph = require('graphlib').Graph;
@@ -64,26 +63,38 @@ function updatePackages(packages) {
 
 describe('Linker', function () {
   var linker;
-  var paths = walkSync('tests/fixtures/example-app/tree');
-
+  var trees;
   beforeEach(function() {
+    var orderedDescs = generateTreeDescriptors(treeMeta, true);
+    var descs = generateTreeDescriptors(treeMeta);
+    trees = orderedDescs.map(function(desc) {
+      return desc.tree;
+    });
     AllDependencies.graph = new Graph();
     AllDependencies._packages = {};
-    linker = new Linker(generateTrees(paths), {
+
+    linker = new Linker(trees, {
       entries: ['example-app'],
-      treeDescriptors: generateTreeDescriptors(paths)
+      treeDescriptors: {
+        ordered: orderedDescs,
+        map: descs
+      }
     });
+  });
+
+  afterEach(function() {
+    trees = null;
   });
 
   it('should throw if no entires are passed', function() {
     expect(function() {
-      return new Linker();
+      return new Linker(trees);
     }).to.throw(/You must pass an array of entries./);
   });
 
   it('should throw if no tree descriptors are passed', function() {
     expect(function() {
-      return new Linker('.', { entries: ['example-app'] });
+      return new Linker(trees, { entries: ['example-app'] });
     }).to.throw(/You must pass TreeDescriptors that describe the trees in the project./);
   });
 

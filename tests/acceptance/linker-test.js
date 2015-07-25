@@ -2,17 +2,14 @@
 
 var Linker     = require('../../lib/linker');
 var helpers         = require('broccoli-test-helpers');
-var stew            = require('broccoli-stew');
 var path            = require('path');
 var expect          = require('chai').expect;
 var fs              = require('fs-extra');
 var sinon           = require('sinon');
-var walkSync        = require('walk-sync');
 var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
-var generateTrees = require('../helpers/generate-trees');
+var treeMeta        = require('../helpers/tree-meta');
 var AllDependencies = require('../../lib/all-dependencies');
 var Graph           = require('graphlib').Graph;
-var find            = stew.find;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
 
@@ -23,39 +20,12 @@ function clone(a) {
 describe('linker acceptance', function () {
   var fixturePath = path.resolve('./tests/fixtures/example-app');
   var testSubject = function() {
-      return new Linker(arguments[0], arguments[1]);
+    return new Linker(arguments[0], arguments[1]);
   };
 
-  var treeMeta = [{
-      name: 'example-app',
-      type: 'app'
-    },
-    {
-      name: 'tests',
-      altName: 'example-app/tests',
-      parent: 'example-app',
-      type: 'tests'
-    },
-    {
-      name: 'ember',
-      type: 'addon'
-    },
-    {
-      name: 'ember-load-initializers',
-      type: 'addon'
-    },
-    {
-      name: 'ember-moment',
-      type: 'addon'
-    },
-    {
-      name: 'ember-resolver',
-      type: 'addon'
-  }];
-
-  var prePackager;
+  var linker;
   beforeEach(function() {
-    prePackager = makeTestHelper({
+    linker = makeTestHelper({
       fixturePath: fixturePath,
       subject: testSubject,
       filter: function(paths) {
@@ -68,12 +38,17 @@ describe('linker acceptance', function () {
   afterEach(function () {
     AllDependencies._packages = {};
     AllDependencies.graph = new Graph();
-    prePackager = null;
+    linker = null;
     return cleanupBuilders();
   });
 
   it('should throw if no entries are passed', function () {
-    return prePackager(find('tree')).catch(function(err) {
+    var orderedDescs = generateTreeDescriptors(treeMeta, true);
+    var trees = orderedDescs.map(function(desc) {
+      return desc.tree;
+    });
+
+    return linker(trees).catch(function(err) {
       expect(err.message).to.eql('You must pass an array of entries.');
     });
   });
@@ -85,7 +60,7 @@ describe('linker acceptance', function () {
       return desc.tree;
     });
 
-    return prePackager(trees, {
+    return linker(trees, {
       entries: ['example-app', 'example-app/tests'],
       treeDescriptors: {
         ordered: orderedDescs,
@@ -124,7 +99,7 @@ describe('linker acceptance', function () {
     });
     var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/tree/example-app/initializers/ember-moment.js');
 
-    return prePackager(trees, {
+    return linker(trees, {
       entries: ['example-app', 'example-app/tests'],
       treeDescriptors: {
         ordered: orderedDescs,
@@ -167,7 +142,7 @@ describe('linker acceptance', function () {
       return desc.tree;
     });
 
-    return prePackager(trees, {
+    return linker(trees, {
       entries: ['example-app', 'example-app/tests'],
       treeDescriptors: {
         ordered: orderedDescs,
@@ -184,7 +159,7 @@ describe('linker acceptance', function () {
   // Spying on functions with broccoli-test-helpers is no bueno
   describe('node_modules rebuild', function() {
     beforeEach(function() {
-      prePackager = makeTestHelper({
+      linker = makeTestHelper({
         fixturePath: fixturePath,
         subject: testSubject,
         prepSubject: function(subject) {
@@ -206,7 +181,7 @@ describe('linker acceptance', function () {
         return desc.tree;
       });
 
-      return prePackager(trees, {
+      return linker(trees, {
         entries: ['example-app', 'example-app/tests'],
         treeDescriptors: {
           ordered: orderedDescs,
@@ -232,7 +207,7 @@ describe('linker acceptance', function () {
       var index = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/index.js';
       var momentIndexContent = fs.readFileSync(index, 'utf8');
       var moment = './tests/fixtures/example-app/node_modules/ember-moment/node_modules/moment/lib/month.js';
-      return prePackager(trees, {
+      return linker(trees, {
         entries: ['example-app', 'example-app/tests'],
         treeDescriptors: {
           ordered: orderedDescs,
