@@ -3,12 +3,8 @@
 var path = require('path');
 var generateTrees = require('./generate-trees');
 
-
-function generateTreeDescriptors(metas) {
-  var trees = generateTrees(metas);
-  var descriptors = {};
-
-  metas.forEach(function(treeMeta, index) {
+function _createDesc(trees, descs) {
+  return function(treeMeta, index) {
     var pkg;
     var root;
     var type = treeMeta.type;
@@ -30,8 +26,9 @@ function generateTreeDescriptors(metas) {
     nodeModulesPath = path.join(root, 'node_modules');
     pkg = require(path.join(root, 'package.json'));
 
-    descriptors[name] = {
+    var desc = {
       type: type,
+      name: name,
       packageName: name,
       root: root,
       nodeModulesPath: nodeModulesPath,
@@ -39,9 +36,24 @@ function generateTreeDescriptors(metas) {
       tree: trees[index]
     };
 
-  });
+    if (descs) {
+      descs[name] = desc;
+    }
 
-  return descriptors;
+    return desc;
+  };
+}
+
+function generateTreeDescriptors(metas, isSet) {
+  var trees = generateTrees(metas);
+  var descs = {};
+
+  if (isSet) {
+    return metas.map(_createDesc(trees));
+  }
+
+  metas.forEach(_createDesc(trees, descs));
+  return descs;
 }
 
 module.exports = generateTreeDescriptors;

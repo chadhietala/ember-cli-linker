@@ -70,15 +70,19 @@ describe('linker acceptance', function () {
     });
   });
 
-  it.only('should only include files in the dependency graph', function () {
+  it('should only include files in the dependency graph', function () {
+    var orderedDescs = generateTreeDescriptors(treeMeta, true);
     var descs = generateTreeDescriptors(treeMeta);
-    var trees = Object.keys(descs).map(function(name) {
-      return descs[name].tree;
+    var trees = orderedDescs.map(function(desc) {
+      return desc.tree;
     });
 
     return prePackager(trees, {
       entries: ['example-app', 'example-app/tests'],
-      treeDescriptors: descs
+      treeDescriptors: {
+        ordered: orderedDescs,
+        map: descs
+      }
     }).then(function(results) {
       expect(results.files.sort()).to.deep.eql([
         'browserified-bundle.js',
@@ -101,16 +105,25 @@ describe('linker acceptance', function () {
     });
   });
 
-  it.skip('should remove files from the output if the imports are removed', function () {
+  it.only('should remove files from the output if the imports are removed', function () {
     var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/tree/example-app/dep-graph.json');
     var graph = fs.readJSONSync(graphPath);
     var graphClone = clone(graph);
+    var orderedDescs = generateTreeDescriptors(treeMeta, true);
+    var descs = generateTreeDescriptors(treeMeta);
+    var trees = orderedDescs.map(function(desc) {
+      return desc.tree;
+    });
+
 
     var initializer = path.join(process.cwd(), '/tests/fixtures/example-app/tree/example-app/initializers/ember-moment.js');
 
-    return prePackager(generateTrees(paths), {
+    return prePackager(trees, {
       entries: ['example-app'],
-      treeDescriptors: generateTreeDescriptors(paths)
+      treeDescriptors: {
+        ordered: orderedDescs,
+        map: descs
+      },
     }).then(function(results) {
 
       delete graphClone['example-app/initializers/ember-moment.js'];
