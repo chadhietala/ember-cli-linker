@@ -156,7 +156,7 @@ describe('all dependencies unit', function() {
     });
   });
 
-  describe('getPackagePathsAndNames', function() {
+  describe('getDescriptors', function() {
     it('should return meta data for a node', function() {
       AllDependencies._packages = {
         a: {
@@ -166,9 +166,9 @@ describe('all dependencies unit', function() {
           descriptor: { srcDir: '/b' }
         }
       };
-      expect(AllDependencies.getPackagePathsAndNames()).to.deep.eql([
-        ['a', '/a'],
-        ['b', '/b']
+      expect(AllDependencies.getDescriptors()).to.deep.eql([
+        { srcDir: '/a' },
+        { srcDir: '/b' }
       ]);
     });
   });
