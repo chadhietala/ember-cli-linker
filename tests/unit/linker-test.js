@@ -116,10 +116,10 @@ describe('Linker', function () {
       var graphs = linker._graphs;
 
       AllDependencies.setRoots(['example-app']);
-      AllDependencies.update({ packageName: 'example-app' }, graphs['example-app'].denormalizedGraph);
+      AllDependencies.update({ name: 'example-app' }, graphs['example-app'].denormalizedGraph);
 
       AllDependencies.addNode('example-app/b', {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
@@ -147,10 +147,10 @@ describe('Linker', function () {
 
 
       expect(diffs).to.deep.eql([exampleApp]);
-      AllDependencies.update({packageName: 'example-app'}, exampleApp.denormalizedGraph);
+      AllDependencies.update({name: 'example-app'}, exampleApp.denormalizedGraph);
 
       AllDependencies.addNode('example-app/a', {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a']);
@@ -172,7 +172,7 @@ describe('Linker', function () {
       linker._graphs = generateGraphs();
       var graphs = linker._graphs;
 
-      AllDependencies.update({ packageName: 'example-app' }, graphs['example-app'].denormalizedGraph);
+      AllDependencies.update({ name: 'example-app' }, graphs['example-app'].denormalizedGraph);
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
 
@@ -204,15 +204,15 @@ describe('Linker', function () {
       };
 
       AllDependencies.sync('example-app/a', ['example-app/b'], {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       AllDependencies.sync('example-app/b', ['example-app/c'], {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       AllDependencies.sync('example-app/c', [], {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       linker._graphsByName = function() {
@@ -224,7 +224,7 @@ describe('Linker', function () {
       var diffs = linker.diffGraph();
 
       expect(diffs).to.deep.eql([exampleApp]);
-      AllDependencies.update({packageName: 'example-app'}, exampleApp.denormalizedGraph);
+      AllDependencies.update({name: 'example-app'}, exampleApp.denormalizedGraph);
       expect(AllDependencies.for('example-app').imports).to.deep.eql({
         'example-app/a': ['example-app/b'],
         'example-app/b': ['example-app/c'],
@@ -261,20 +261,20 @@ describe('Linker', function () {
       };
 
       updatePackages([
-        [{packageName: 'foobiz'}, graphs.foobiz.denormalizedGraph],
-        [{packageName: 'example-app'}, graphs['example-app'].denormalizedGraph]
+        [{name: 'foobiz'}, graphs.foobiz.denormalizedGraph],
+        [{name: 'example-app'}, graphs['example-app'].denormalizedGraph]
       ]);
 
       AllDependencies.sync('example-app/a', ['example-app/b'], {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       AllDependencies.sync('example-app/b', [], {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       AllDependencies.sync('foobiz/foo', ['example-app/b'], {
-        packageName: 'foobiz'
+        name: 'foobiz'
       });
 
 
@@ -354,7 +354,7 @@ describe('Linker', function () {
 
       graphs.ember = {
         denormalizedGraph: {
-          'ember': {
+          ember: {
             exports: {
               exported: [],
               specifiers: []
@@ -366,30 +366,31 @@ describe('Linker', function () {
       };
 
       updatePackages([
-        [{packageName: 'ember'}, graphs.ember.denormalizedGraph],
-        [{packageName: 'example-app'}, graphs['example-app'].denormalizedGraph],
-        [{packageName: 'foobiz'}, graphs.foobiz.denormalizedGraph],
-        [{packageName: 'bar'}, graphs.bar.denormalizedGraph]
+        [{name: 'ember'}, graphs.ember.denormalizedGraph],
+        [{name: 'example-app'}, graphs['example-app'].denormalizedGraph],
+        [{name: 'foobiz'}, graphs.foobiz.denormalizedGraph],
+        [{name: 'bar'}, graphs.bar.denormalizedGraph]
       ]);
 
       AllDependencies.sync('example-app/a', ['ember', 'example-app/b'], {
+        name: 'example-app',
         packageName: 'example-app'
       });
 
       AllDependencies.sync('ember', [], {
-        packageName: 'ember'
+        name: 'ember'
       });
 
       AllDependencies.sync('example-app/b', ['foobiz/foo'], {
-        packageName: 'example-app'
+        name: 'example-app'
       });
 
       AllDependencies.sync('foobiz/foo', ['bar/bar'], {
-        packageName: 'foobiz'
+        name: 'foobiz'
       });
 
       AllDependencies.sync('bar/bar', ['ember'], {
-        packageName: 'bar'
+        name: 'bar'
       });
 
       AllDependencies.for('example-app').descriptor.updateRelativePaths = function() {};
@@ -434,7 +435,7 @@ describe('Linker', function () {
       var diffs = linker.diffGraph();
       expect(diffs).to.deep.eql([exampleApp]);
 
-      AllDependencies.update({packageName: 'example-app' }, exampleApp.denormalizedGraph);
+      AllDependencies.update({name: 'example-app' }, exampleApp.denormalizedGraph);
 
       expect(AllDependencies.graph.nodes()).to.deep.eql(['example-app/a', 'ember', 'example-app/b']);
     });

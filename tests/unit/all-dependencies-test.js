@@ -97,6 +97,7 @@ describe('all dependencies unit', function() {
     descriptor = {
       root: '/workspace/example-app',
       packageName: 'example-app',
+      name: 'example-app',
       srcDir: 'foo/bar/baz_tmp',
       nodeModulesPath: '/workspace/example-app/node_modules',
       pkg: {
