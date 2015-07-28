@@ -84,6 +84,11 @@ describe('linker acceptance', function () {
         'lodash/lib/array/uniq.js',
         'lodash/lib/compat.js',
       ]);
+
+      var browserified = results.directory + path.sep + 'browserified-bundle.js';
+      var assertion = fs.readFileSync('./tests/assertions/browserified-bundle.js');
+
+      expect(fs.readFileSync(browserified)).to.eql(assertion);
     });
   });
 
