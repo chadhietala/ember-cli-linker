@@ -64,9 +64,11 @@ function updatePackages(packages) {
 describe('Linker', function () {
   var linker;
   var trees;
+  var orderedDescs;
+  var descs;
   beforeEach(function() {
-    var orderedDescs = generateTreeDescriptors(treeMeta, true);
-    var descs = generateTreeDescriptors(treeMeta);
+    orderedDescs = generateTreeDescriptors(treeMeta, true);
+    descs = generateTreeDescriptors(treeMeta);
     trees = orderedDescs.map(function(desc) {
       return desc.tree;
     });
@@ -96,6 +98,43 @@ describe('Linker', function () {
     expect(function() {
       return new Linker(trees, { entries: ['example-app'] });
     }).to.throw(/You must pass TreeDescriptors that describe the trees in the project./);
+  });
+
+  describe('_buildSubGraphs', function() {
+
+    it('should return a map of arrays containing the nodes in a subgraph with cross entry deps pruned', function() {
+      AllDependencies.sync('example-app/app', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/router', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/tests/unit/app', ['example-app/app', 'ember'], {
+        packageName: 'example-app/tests'
+      });
+
+      AllDependencies.sync('ember', [], {
+        packageName: 'ember'
+      });
+
+      linker = new Linker(trees, {
+        entries: ['example-app', 'example-app/tests'],
+        treeDescriptors: {
+          ordered: orderedDescs,
+          map: descs
+        }
+      });
+
+      linker._buildSubGraphs();
+
+      expect(linker.subgraphs).to.deep.eql({
+        'shared-by-all': ['ember'],
+        'example-app': ['example-app/router', 'ember', 'example-app/app'],
+        'example-app/tests': ['example-app/tests/unit/app', 'ember']
+      });
+    });
   });
 
   describe('diffGraph', function() {
