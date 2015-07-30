@@ -69,6 +69,7 @@ describe('linker acceptance', function () {
     }).then(function(results) {
       expect(results.files.sort()).to.deep.eql([
         'browserified-bundle.js',
+        'dep-graph.dot',
         'ember-load-initializers.js',
         'ember-moment/helpers/ago.js',
         'ember-moment/helpers/duration.js',
@@ -123,6 +124,7 @@ describe('linker acceptance', function () {
 
       expect(results.files.sort()).to.deep.equal([
         'browserified-bundle.js',
+        'dep-graph.dot',
         'ember-load-initializers.js',
         'ember-resolver.js',
         'ember.js',
