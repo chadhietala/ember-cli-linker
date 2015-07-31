@@ -537,6 +537,45 @@ describe('all dependencies unit', function() {
     });
   });
 
+  describe('graphForEngines', function() {
+
+    beforeEach(function() {
+      AllDependencies.roots = ['example-app', 'example-app/tests'];
+    });
+
+    afterEach(function() {
+      AllDependencies.roots = [];
+    });
+
+    it('should return a map of arrays containing the nodes in a subgraph with cross entry deps pruned', function() {
+
+      AllDependencies.roots = ['example-app', 'example-app/tests'];
+
+      AllDependencies.sync('example-app/app', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/router', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/tests/unit/app', ['example-app/app', 'ember'], {
+        packageName: 'example-app/tests'
+      });
+
+      AllDependencies.sync('ember', [], {
+        packageName: 'ember'
+      });
+
+      expect(AllDependencies.graphForEngines()).to.deep.eql({
+        'shared-by-all': ['ember'],
+        'example-app': ['example-app/router', 'ember', 'example-app/app'],
+        'example-app/tests': ['example-app/tests/unit/app', 'ember']
+      });
+    });
+  });
+
+
   describe('add', function() {
     it('should add an item to the graph via a single import', function() {
       var desc = {

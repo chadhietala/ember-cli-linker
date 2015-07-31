@@ -84,6 +84,7 @@ describe('linker acceptance', function () {
         'lodash/lib/array/flatten.js',
         'lodash/lib/array/uniq.js',
         'lodash/lib/compat.js',
+        'sub-graph.json'
       ]);
 
       var browserified = results.directory + path.sep + 'browserified-bundle.js';
@@ -134,7 +135,8 @@ describe('linker acceptance', function () {
         'example-app/tests/unit/components/foo-bar-test.js',
         'lodash/lib/array/flatten.js',
         'lodash/lib/array/uniq.js',
-        'lodash/lib/compat.js'
+        'lodash/lib/compat.js',
+        'sub-graph.json'
       ]);
 
     });
