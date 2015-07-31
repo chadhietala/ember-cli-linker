@@ -568,9 +568,40 @@ describe('all dependencies unit', function() {
       });
 
       expect(AllDependencies.graphForEngines()).to.deep.eql({
-        'shared-by-all': ['ember'],
-        'example-app': ['example-app/router', 'ember', 'example-app/app'],
-        'example-app/tests': ['example-app/tests/unit/app', 'ember']
+        'shared': ['ember'],
+        'example-app': ['example-app/router', 'example-app/app'],
+        'example-app/tests': ['example-app/tests/unit/app']
+      });
+    });
+
+    it('should pick up transitives', function() {
+
+      AllDependencies.roots = ['example-app', 'example-app/tests'];
+
+      AllDependencies.sync('example-app/app', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/router', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/tests/unit/app', ['example-app/app', 'ember'], {
+        packageName: 'example-app/tests'
+      });
+
+      AllDependencies.sync('ember', ['jquery'], {
+        packageName: 'ember'
+      });
+
+      AllDependencies.sync('jquery', [], {
+        packageName: 'jquery'
+      });
+
+      expect(AllDependencies.graphForEngines()).to.deep.eql({
+        'shared': ['ember', 'jquery'],
+        'example-app': ['example-app/router', 'example-app/app'],
+        'example-app/tests': ['example-app/tests/unit/app']
       });
     });
   });

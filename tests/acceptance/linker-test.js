@@ -68,26 +68,25 @@ describe('linker acceptance', function () {
       }
     }).then(function(results) {
       expect(results.files.sort()).to.deep.eql([
-        'browserified-bundle.js',
         'dep-graph.dot',
-        'ember-load-initializers.js',
-        'ember-moment/helpers/ago.js',
-        'ember-moment/helpers/duration.js',
-        'ember-moment/helpers/moment.js',
-        'ember-resolver.js',
-        'ember.js',
-        'example-app/app.js',
-        'example-app/config/environment.js',
-        'example-app/initializers/ember-moment.js',
-        'example-app/router.js',
-        'example-app/tests/unit/components/foo-bar-test.js',
-        'lodash/lib/array/flatten.js',
-        'lodash/lib/array/uniq.js',
-        'lodash/lib/compat.js',
-        'sub-graph.json'
+        'engines/example-app/example-app/app.js',
+        'engines/example-app/example-app/config/environment.js',
+        'engines/example-app/example-app/initializers/ember-moment.js',
+        'engines/example-app/example-app/router.js',
+        'engines/example-app/tests/example-app/tests/unit/components/foo-bar-test.js',
+        'engines/shared/browserified-bundle.js',
+        'engines/shared/ember-load-initializers.js',
+        'engines/shared/ember-moment/helpers/ago.js',
+        'engines/shared/ember-moment/helpers/duration.js',
+        'engines/shared/ember-moment/helpers/moment.js',
+        'engines/shared/ember-resolver.js',
+        'engines/shared/ember.js',
+        'engines/shared/lodash/lib/array/flatten.js',
+        'engines/shared/lodash/lib/array/uniq.js',
+        'engines/shared/lodash/lib/compat.js'
       ]);
 
-      var browserified = results.directory + path.sep + 'browserified-bundle.js';
+      var browserified = results.directory + path.sep + 'engines/shared/browserified-bundle.js';
       var assertion = fs.readFileSync('./tests/assertions/browserified-bundle.js');
 
       expect(fs.readFileSync(browserified)).to.eql(assertion);
@@ -124,19 +123,18 @@ describe('linker acceptance', function () {
       fs.writeFileSync(initializer, '');
 
       expect(results.files.sort()).to.deep.equal([
-        'browserified-bundle.js',
         'dep-graph.dot',
-        'ember-load-initializers.js',
-        'ember-resolver.js',
-        'ember.js',
-        'example-app/app.js',
-        'example-app/config/environment.js',
-        'example-app/router.js',
-        'example-app/tests/unit/components/foo-bar-test.js',
-        'lodash/lib/array/flatten.js',
-        'lodash/lib/array/uniq.js',
-        'lodash/lib/compat.js',
-        'sub-graph.json'
+        'engines/example-app/example-app/app.js',
+        'engines/example-app/example-app/config/environment.js',
+        'engines/example-app/example-app/router.js',
+        'engines/example-app/tests/example-app/tests/unit/components/foo-bar-test.js',
+        'engines/shared/browserified-bundle.js',
+        'engines/shared/ember-load-initializers.js',
+        'engines/shared/ember-resolver.js',
+        'engines/shared/ember.js',
+        'engines/shared/lodash/lib/array/flatten.js',
+        'engines/shared/lodash/lib/array/uniq.js',
+        'engines/shared/lodash/lib/compat.js'
       ]);
 
     });
@@ -156,7 +154,7 @@ describe('linker acceptance', function () {
         map: descs
       }
     }).then(function(results) {
-      var babelified = fs.readFileSync(results.directory + '/lodash/lib/array/uniq.js', 'utf8');
+      var babelified = fs.readFileSync(results.directory + '/engines/shared/lodash/lib/array/uniq.js', 'utf8');
       expect(babelified.indexOf('=>')).to.be.lt(0);
       expect(babelified.indexOf('...args')).to.be.lt(0);
     });
@@ -227,7 +225,7 @@ describe('linker acceptance', function () {
       }).then(function(results) {
         fs.remove(moment);
         fs.writeFileSync(index, momentIndexContent);
-        var contents = fs.readFileSync(path.join(results.directory, 'browserified-bundle.js'), 'utf8');
+        var contents = fs.readFileSync(path.join(results.directory, '/engines/shared/browserified-bundle.js'), 'utf8');
         expect( contents.indexOf('var a = "a";') > -1).to.be.ok;
         expect(results.subject.resolvers.npm.compile.callCount).to.equal(2);
         results.subject.resolvers.npm.compile.restore();
