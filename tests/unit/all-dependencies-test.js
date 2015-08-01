@@ -604,6 +604,72 @@ describe('all dependencies unit', function() {
         'example-app/tests': ['example-app/tests/unit/app']
       });
     });
+
+    it('should include root nodes if they do not have outbound edges', function() {
+      AllDependencies.roots = ['example-app', 'example-app/tests'];
+
+      AllDependencies.sync('example-app/app', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/loader', [], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/router', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/tests/unit/app', ['example-app/app', 'ember'], {
+        packageName: 'example-app/tests'
+      });
+
+      AllDependencies.sync('ember', ['jquery'], {
+        packageName: 'ember'
+      });
+
+      AllDependencies.sync('jquery', [], {
+        packageName: 'jquery'
+      });
+
+      expect(AllDependencies.graphForEngines()).to.deep.eql({
+        'shared': ['ember', 'jquery'],
+        'example-app': ['example-app/router', 'example-app/app', 'example-app/loader'],
+        'example-app/tests': ['example-app/tests/unit/app']
+      });
+    });
+
+    it('items that dont have a package are assumed to have been introduced to the app by app.import and thus they should go into the shared/vendor', function() {
+      AllDependencies.roots = ['example-app', 'example-app/tests'];
+
+      AllDependencies.sync('example-app/app', ['ember', 'some'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/router', ['ember'], {
+        packageName: 'example-app'
+      });
+
+      AllDependencies.sync('example-app/tests/unit/app', ['example-app/app', 'ember'], {
+        packageName: 'example-app/tests'
+      });
+
+      AllDependencies.sync('ember', ['jquery'], {
+        packageName: 'ember'
+      });
+
+      AllDependencies.sync('jquery', [], {
+        packageName: 'jquery'
+      });
+
+      AllDependencies.sync('some', [], {});
+
+      expect(AllDependencies.graphForEngines()).to.deep.eql({
+        'shared': ['ember', 'jquery', 'some'],
+        'example-app': ['example-app/router', 'example-app/app'],
+        'example-app/tests': ['example-app/tests/unit/app']
+      });
+    });
   });
 
 
