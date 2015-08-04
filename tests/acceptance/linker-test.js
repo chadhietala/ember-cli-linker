@@ -206,6 +206,84 @@ describe('linker acceptance', function () {
     });
   });
 
+  it('if the same legacy file exports multiple items files the backing file only is added once', function() {
+    var orderedDescs = genTreeDesc(treeMeta, true);
+    var descs = genTreeDesc(treeMeta);
+    var trees = orderedDescs.map(function(desc) {
+      return desc.tree;
+    });
+    var graphPath = 'tests/fixtures/example-app/tree/example-app/dep-graph.json';
+    var originalGraph = fs.readJSONSync(graphPath);
+    var graph = clone(originalGraph);
+
+    graph['example-app/app.js'].imports.push({
+      'imported': [
+        'default'
+      ],
+      'source': 'fizz',
+      'specifiers': [
+        {
+          'imported': 'default',
+          'kind': 'named',
+          'local': 'Fizz'
+        }
+      ]
+    },
+    {
+      'imported': [
+        'default'
+      ],
+      'source': 'bazz',
+      'specifiers': [
+        {
+          'imported': 'default',
+          'kind': 'named',
+          'local': 'Bazz'
+        }
+      ]
+    });
+
+    fs.writeFileSync(graphPath, stringify(graph));
+
+    return linker(trees, {
+      entries: ['example-app', 'example-app/tests'],
+      legacyFilesToAppend: [
+        {
+          exports: { fizz: ['default'], bazz: ['default'] },
+          type: 'vendor',
+          prepend: false,
+          path: 'bower_components/foo-bar/baz.js',
+          files: [ 'fizz', 'bazz' ]
+        }
+      ],
+      treeDescriptors: {
+        ordered: orderedDescs,
+        map: descs
+      }
+    }).then(function(results) {
+      fs.writeFileSync(graphPath, stringify(originalGraph));
+      expect(results.files).to.deep.eql([
+        'dep-graph.dot',
+        'engines/example-app/example-app/app.js',
+        'engines/example-app/example-app/config/environment.js',
+        'engines/example-app/example-app/initializers/ember-moment.js',
+        'engines/example-app/example-app/router.js',
+        'engines/example-app/tests/example-app/tests/unit/components/foo-bar-test.js',
+        'engines/shared/baz.js',
+        'engines/shared/browserified-bundle.js',
+        'engines/shared/ember-load-initializers.js',
+        'engines/shared/ember-moment/helpers/ago.js',
+        'engines/shared/ember-moment/helpers/duration.js',
+        'engines/shared/ember-moment/helpers/moment.js',
+        'engines/shared/ember-resolver.js',
+        'engines/shared/ember.js',
+        'engines/shared/lodash/lib/array/flatten.js',
+        'engines/shared/lodash/lib/array/uniq.js',
+        'engines/shared/lodash/lib/compat.js'
+      ]);
+    });
+  });
+
   it('should transpile regular es6 modules', function() {
     var orderedDescs = genTreeDesc(treeMeta, true);
     var descs = genTreeDesc(treeMeta);
