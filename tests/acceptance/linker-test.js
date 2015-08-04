@@ -1,17 +1,18 @@
 'use strict';
 
-var Linker     = require('../../lib/linker');
+var Linker          = require('../../lib/linker');
 var helpers         = require('broccoli-test-helpers');
 var path            = require('path');
 var expect          = require('chai').expect;
 var fs              = require('fs-extra');
 var sinon           = require('sinon');
-var generateTreeDescriptors = require('../helpers/generate-tree-descriptors');
+var genTreeDesc     = require('../helpers/generate-tree-descriptors');
 var treeMeta        = require('../helpers/tree-meta');
 var AllDependencies = require('../../lib/all-dependencies');
 var Graph           = require('graphlib').Graph;
 var makeTestHelper  = helpers.makeTestHelper;
 var cleanupBuilders = helpers.cleanupBuilders;
+var stringify       = require('json-stable-stringify');
 
 function clone(a) {
    return JSON.parse(JSON.stringify(a));
@@ -43,7 +44,7 @@ describe('linker acceptance', function () {
   });
 
   it('should throw if no entries are passed', function () {
-    var orderedDescs = generateTreeDescriptors(treeMeta, true);
+    var orderedDescs = genTreeDesc(treeMeta, true);
     var trees = orderedDescs.map(function(desc) {
       return desc.tree;
     });
@@ -54,8 +55,8 @@ describe('linker acceptance', function () {
   });
 
   it('should only include files in the dependency graph', function () {
-    var orderedDescs = generateTreeDescriptors(treeMeta, true);
-    var descs = generateTreeDescriptors(treeMeta);
+    var orderedDescs = genTreeDesc(treeMeta, true);
+    var descs = genTreeDesc(treeMeta);
     var trees = orderedDescs.map(function(desc) {
       return desc.tree;
     });
@@ -97,8 +98,8 @@ describe('linker acceptance', function () {
     var graphPath = path.join(process.cwd(), 'tests/fixtures/example-app/tree/example-app/dep-graph.json');
     var graph = fs.readJSONSync(graphPath);
     var graphClone = clone(graph);
-    var orderedDescs = generateTreeDescriptors(treeMeta, true);
-    var descs = generateTreeDescriptors(treeMeta);
+    var orderedDescs = genTreeDesc(treeMeta, true);
+    var descs = genTreeDesc(treeMeta);
     var trees = orderedDescs.map(function(desc) {
       return desc.tree;
     });
@@ -140,9 +141,74 @@ describe('linker acceptance', function () {
     });
   });
 
+  it('should include files that were imported via app.import', function() {
+    var orderedDescs = genTreeDesc(treeMeta, true);
+    var descs = genTreeDesc(treeMeta);
+    var trees = orderedDescs.map(function(desc) {
+      return desc.tree;
+    });
+    var graphPath = 'tests/fixtures/example-app/tree/example-app/dep-graph.json';
+    var originalGraph = fs.readJSONSync(graphPath);
+    var graph = clone(originalGraph);
+
+    graph['example-app/app.js'].imports.push({
+      'imported': [
+        'default'
+      ],
+      'source': 'fizz',
+      'specifiers': [
+        {
+          'imported': 'default',
+          'kind': 'named',
+          'local': 'Fizz'
+        }
+      ]
+    });
+
+    fs.writeFileSync(graphPath, stringify(graph));
+
+    return linker(trees, {
+      entries: ['example-app', 'example-app/tests'],
+      legacyFilesToAppend: [
+        {
+          exports: { fizz: ['default'] },
+          type: 'vendor',
+          prepend: false,
+          path: 'bower_components/foo-bar/baz.js',
+          files: [ 'fizz' ]
+        }
+      ],
+      treeDescriptors: {
+        ordered: orderedDescs,
+        map: descs
+      }
+    }).then(function(results) {
+      fs.writeFileSync(graphPath, stringify(originalGraph));
+      expect(results.files).to.deep.eql([
+        'dep-graph.dot',
+        'engines/example-app/example-app/app.js',
+        'engines/example-app/example-app/config/environment.js',
+        'engines/example-app/example-app/initializers/ember-moment.js',
+        'engines/example-app/example-app/router.js',
+        'engines/example-app/tests/example-app/tests/unit/components/foo-bar-test.js',
+        'engines/shared/baz.js',
+        'engines/shared/browserified-bundle.js',
+        'engines/shared/ember-load-initializers.js',
+        'engines/shared/ember-moment/helpers/ago.js',
+        'engines/shared/ember-moment/helpers/duration.js',
+        'engines/shared/ember-moment/helpers/moment.js',
+        'engines/shared/ember-resolver.js',
+        'engines/shared/ember.js',
+        'engines/shared/lodash/lib/array/flatten.js',
+        'engines/shared/lodash/lib/array/uniq.js',
+        'engines/shared/lodash/lib/compat.js'
+      ]);
+    });
+  });
+
   it('should transpile regular es6 modules', function() {
-    var orderedDescs = generateTreeDescriptors(treeMeta, true);
-    var descs = generateTreeDescriptors(treeMeta);
+    var orderedDescs = genTreeDesc(treeMeta, true);
+    var descs = genTreeDesc(treeMeta);
     var trees = orderedDescs.map(function(desc) {
       return desc.tree;
     });
@@ -180,8 +246,8 @@ describe('linker acceptance', function () {
     });
 
     it('should not re-browserfify if the package has not changed', function() {
-      var orderedDescs = generateTreeDescriptors(treeMeta, true);
-      var descs = generateTreeDescriptors(treeMeta);
+      var orderedDescs = genTreeDesc(treeMeta, true);
+      var descs = genTreeDesc(treeMeta);
       var trees = orderedDescs.map(function(desc) {
         return desc.tree;
       });
@@ -204,8 +270,8 @@ describe('linker acceptance', function () {
     });
 
     it('should re-browserfify if the package changed', function() {
-      var orderedDescs = generateTreeDescriptors(treeMeta, true);
-      var descs = generateTreeDescriptors(treeMeta);
+      var orderedDescs = genTreeDesc(treeMeta, true);
+      var descs = genTreeDesc(treeMeta);
       var trees = orderedDescs.map(function(desc) {
         return desc.tree;
       });
