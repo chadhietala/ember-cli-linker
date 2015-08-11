@@ -98,7 +98,7 @@ follows:
 1. Sync forward all of the entry's files.
 2. Map over the imports syncing the file to the output tree
 3. Read in the import's corresponding dep-graph.json for the import in the
-   interation grabbing it's imports (transitives).
+   interaction grabbing it's imports (transitives).
 4. Back to 2 with the imports (transitives) and continue till all of the
    entries imports have been synced.
 
@@ -125,7 +125,7 @@ application.
 
 The way legacy modules are resolved is different. Since we cannot construct a
 dep-graph.json ahead of time, we rely on browserify's ability to handle this
-for us. Since there is probability that addons or apps may pull in the same
+for us. Since there is a probability that addons or apps may pull in the same
 legacy module we wait till the resolution of addons is complete. This allows
 for the stub amd files to be aggregated and deduped.
 
