@@ -3,7 +3,7 @@
 [![Build Status][travis-badge]][travis-badge-url] [![Coverage Status](https://coveralls.io/repos/chadhietala/ember-cli-linker/badge.svg?branch=coveralls)](https://coveralls.io/r/chadhietala/ember-cli-linker?branch=coveralls)
 
 The __Linker__ is the soon to be resolution phase for the Ember CLI build
-process. It's primary concern is resolving dependencies in a project and
+process. Its primary concern is resolving dependencies in a project and
 outputing a tree that represents the dependency graph.  This tree would then be
 passed to the __Packager__ that allows for declarative concatenation
 strategies. The resolution occurs via __dependency resolvers__. Out of the box
@@ -98,7 +98,7 @@ follows:
 1. Sync forward all of the entry's files.
 2. Map over the imports syncing the file to the output tree
 3. Read in the import's corresponding dep-graph.json for the import in the
-   interaction grabbing it's imports (transitives).
+   interaction grabbing its imports (transitives).
 4. Back to 2 with the imports (transitives) and continue till all of the
    entries imports have been synced.
 
@@ -110,7 +110,7 @@ come from the `ember-moment` addon. This allows us to make a clear delineation
 between if an import is an addon or not.  In the case that the import is not an
 addon, we take the modules namespace and use the module resolution algorithm to
 see if a package exists for the namespace.  If there is we then further check
-for the "jsnext:main" convention in it's package.json.  If both of those cases
+for the "jsnext:main" convention in its package.json.  If both of those cases
 are true we know we are dealing with an ES6 module.
 
 Using Babel we compile the file. At the end of each compilation we are given
